@@ -1,14 +1,18 @@
 import { config } from 'dotenv';
-import { prisma } from './../src/infrastructure/database/prisma.client.js';
-import { clearAllCaches } from './../src/infrastructure/cache/lru.cache.js';
 
 // Load test environment variables
 config({ path: '.env.test' });
 
-// Set test environment
+// Set test environment defaults
 process.env.NODE_ENV = 'test';
-process.env.JWT_ACCESS_SECRET = 'test-access-secret-key-at-least-32-characters';
-process.env.JWT_REFRESH_SECRET = 'test-refresh-secret-key-at-least-32-characters';
+process.env.JWT_ACCESS_SECRET = process.env.JWT_ACCESS_SECRET || 'test-access-secret-key-at-least-32-characters';
+process.env.JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || 'test-refresh-secret-key-at-least-32-characters';
+process.env.RAZORPAY_KEY_ID = process.env.RAZORPAY_KEY_ID || 'rzp_test_12345678901234';
+process.env.RAZORPAY_KEY_SECRET = process.env.RAZORPAY_KEY_SECRET || 'test_key_secret_12345';
+process.env.RAZORPAY_WEBHOOK_SECRET = process.env.RAZORPAY_WEBHOOK_SECRET || 'test_webhook_secret_12345';
+
+import { prisma } from './../src/infrastructure/database/prisma.client.js';
+import { clearAllCaches } from './../src/infrastructure/cache/lru.cache.js';
 
 // Global test setup
 beforeAll(async () => {
