@@ -8,9 +8,9 @@ export default defineConfig({
     alias: { "@": path.resolve(__dirname, "./src") },
   },
   server: {
-    port: 5174,
     proxy: {
-      "/api": "https://frames41-production.up.railway.app",
+      "/api": "http://localhost:3000",
+      "/webhooks": "http://localhost:3000",
     },
   },
 });
