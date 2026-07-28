@@ -32,7 +32,29 @@ export function useProfile() {
     }
   }, [])
 
-  useEffect(() => { fetchProfile() }, [fetchProfile])
+  useEffect(() => {
+    let isMounted = true
+    const token = getAccessToken()
+    if (!token) {
+      setLoading(false)
+      return
+    }
+    Promise.all([
+      api.users.getProfile(),
+      api.users.getAddresses(),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ]).then(([user, addresses]: any[]) => {
+      if (!isMounted) return
+      setProfileData({
+        user: adaptProfileUser(user),
+        addresses: (addresses ?? []).map(adaptProfileAddress),
+        isNewsletterSubscribed: false,
+      })
+    }).catch(() => {}).finally(() => {
+      if (isMounted) setLoading(false)
+    })
+    return () => { isMounted = false }
+  }, [])
 
   const updateProfile = useCallback(async (data: Partial<ProfileUser>) => {
     await api.users.updateProfile({

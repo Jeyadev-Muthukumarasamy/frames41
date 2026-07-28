@@ -1,6 +1,6 @@
 import { useParams } from 'react-router-dom'
 import { useBlog } from '@/hooks/useBlog'
-import Blog from '@/components/blog/Blog'
+import Blog from '@/components/Blog/Blog'
 
 export default function BlogPage() {
   const { slug = '' } = useParams<{ slug: string }>()

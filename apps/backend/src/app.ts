@@ -38,6 +38,10 @@ import { sanitizeReviewBody, sanitizeBlogContent, sanitizeFaqContent } from './m
 export function createApp(): express.Application {
   const app = express();
 
+  // Trust one proxy hop (Railway / Vercel / any reverse-proxy infra)
+  // Required for correct IP extraction from X-Forwarded-For in rate-limiting and audit logs
+  app.set('trust proxy', 1);
+
   // Security middleware
   app.use(helmet({
     contentSecurityPolicy: {
@@ -108,6 +112,7 @@ export function createApp(): express.Application {
 
   app.use(apiPrefix, (req, res, next) => {
     const publicReadPrefixes = [
+      '/home',
       '/products',
       '/categories',
       '/banners',

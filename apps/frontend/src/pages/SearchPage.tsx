@@ -18,15 +18,24 @@ export default function SearchPage() {
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
-    if (!query) return
-    setLoading(true)
+    if (!query) {
+      setProducts([])
+      return
+    }
+    let isMounted = true
     api.products.searchProducts(query)
       .then((res: unknown) => {
+        if (!isMounted) return
         const raw = Array.isArray(res) ? res : (res && typeof res === 'object' && Array.isArray((res as Record<string, unknown>).data)) ? (res as Record<string, unknown>).data as unknown[] : []
         setProducts(raw.map(adaptProductListing))
       })
-      .catch(() => setProducts([]))
-      .finally(() => setLoading(false))
+      .catch(() => {
+        if (isMounted) setProducts([])
+      })
+      .finally(() => {
+        if (isMounted) setLoading(false)
+      })
+    return () => { isMounted = false }
   }, [query])
 
   return (

@@ -67,6 +67,7 @@ export function usePayment(orderId: string) {
           modal: {
             ondismiss: () => {
               setStatus('idle')
+              setError('Payment was cancelled. You can try again whenever you are ready.')
               resolve(false)
             },
           },
@@ -87,6 +88,15 @@ export function usePayment(orderId: string) {
             }
           },
         })
+
+        if (typeof rzp.on === 'function') {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          rzp.on('payment.failed', (response: any) => {
+            const reason = response?.error?.description || response?.error?.reason || 'Payment processing failed'
+            setError(reason)
+          })
+        }
+
         rzp.open()
       })
     } catch (err: unknown) {

@@ -44,6 +44,30 @@ let isRefreshing = false
 let refreshQueue: Array<(token: string) => void> = []
 let rejectQueue: Array<(err: unknown) => void> = []
 
+const inFlightGets = new Map<string, Promise<unknown>>()
+const getCache = new Map<string, { data: unknown; at: number }>()
+
+function dedupeGet<T>(key: string, request: () => Promise<T>): Promise<T> {
+  const existing = inFlightGets.get(key)
+  if (existing) return existing as Promise<T>
+  const promise = request().finally(() => inFlightGets.delete(key))
+  inFlightGets.set(key, promise)
+  return promise
+}
+
+function cachedGet<T>(key: string, request: () => Promise<T>, ttlMs: number): Promise<T> {
+  return dedupeGet(key, () => {
+    const cached = getCache.get(key)
+    if (cached && Date.now() - cached.at < ttlMs) {
+      return Promise.resolve(cached.data as T)
+    }
+    return request().then((data) => {
+      getCache.set(key, { data, at: Date.now() })
+      return data
+    })
+  })
+}
+
 function drainQueue(token: string) {
   refreshQueue.forEach((cb) => cb(token))
   refreshQueue = []
@@ -320,6 +344,13 @@ export const api = {
 
   admin: {
     // ── Dashboard ────────────────────────────────────────────────────────────
+    getDashboard: (period: Period, startDate?: string, endDate?: string, limit = 10) =>
+      unwrap<{ stats: DashboardStats; analytics: AnalyticsSummary; topProducts: TopProduct[] }>(
+        instance.get('/admin/dashboard', {
+          params: stripEmpty({ period, startDate, endDate, limit }),
+        }),
+      ),
+
     getDashboardStats: () =>
       unwrap<DashboardStats>(instance.get('/admin/dashboard/stats')),
 
@@ -402,9 +433,10 @@ export const api = {
 
     // ── Categories ───────────────────────────────────────────────────────────
     getCategoryTree: (includeInactive = true) =>
-      unwrap<AdminCategory[]>(
-        instance.get('/categories/tree', { params: { includeInactive } }),
-      ),
+      cachedGet(`admin:categories:tree:${includeInactive}`, () =>
+        unwrap<AdminCategory[]>(
+          instance.get('/categories/tree', { params: { includeInactive } }),
+        ), 120_000),
 
     createCategory: (data: CategoryFormData) =>
       unwrap<AdminCategory>(instance.post('/categories', data)),
@@ -458,8 +490,24 @@ export const api = {
     uploadImage: (file: File) => {
       const formData = new FormData()
       formData.append('image', file)
-      return unwrap<{ url: string }>(
+      return unwrap<{ url: string; urls?: string[] }>(
         instance.post('/admin/upload', formData, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        }),
+      )
+    },
+    uploadImages: (files: File[]) => {
+      if (files.length === 0) return Promise.resolve({ urls: [], url: '' })
+      if (files.length === 1) {
+        return api.admin.uploadImage(files[0]).then((res) => ({
+          urls: res.urls ?? [res.url],
+          url: res.url,
+        }))
+      }
+      const formData = new FormData()
+      files.forEach((file) => formData.append('images', file))
+      return unwrap<{ urls: string[]; url: string }>(
+        instance.post('/admin/upload/batch', formData, {
           headers: { 'Content-Type': 'multipart/form-data' },
         }),
       )

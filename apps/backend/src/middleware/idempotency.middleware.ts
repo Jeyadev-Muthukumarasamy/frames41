@@ -8,8 +8,6 @@ import { logger } from '../infrastructure/logger/pino.logger.js';
 /**
  * Get idempotency key from headers
  */
-
-//test push
 function getIdempotencyKey(req: Request): string | null {
   const key = req.headers['idempotency-key'];
   return typeof key === 'string' && key.length > 0 ? key : null;
@@ -102,5 +100,9 @@ export function idempotencyMiddleware(
       logger.error({ error }, 'Idempotency check failed');
       next(error);
     }
-  })();
+  })().catch((error) => {
+    // Safety net: ensure next() is always called even if the IIFE itself throws
+    logger.error({ error }, 'Idempotency middleware unexpected error');
+    next(error);
+  });
 }

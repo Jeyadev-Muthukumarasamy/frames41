@@ -1,9 +1,11 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, memo } from 'react'
+import { useNavigate } from 'react-router-dom'
 import type { ProductListingProduct } from '../../types/productListing'
 import { formatINR } from '../../utils/format'
 import Icon from '../ui/Icon'
 import { getProductHref } from '@/utils/productListing'
-
+import OptimizedImage from '../ui/OptimizedImage'
+import { api } from '@/lib/api'
 
 interface ProductListingCardProps {
   readonly product: ProductListingProduct
@@ -11,16 +13,27 @@ interface ProductListingCardProps {
   readonly onProductSelect?: (productId: string) => void
 }
 
-export default function ProductListingCard({
+export default memo(function ProductListingCard({
   product,
   onAddToCart,
   onProductSelect,
 }: ProductListingCardProps) {
+  const navigate = useNavigate()
   const isInStock = product.inStock ?? true
   const [status, setStatus] = useState<'idle' | 'adding' | 'added'>('idle')
 
-  const handleAddToCart = useCallback(async () => {
-    if (!onAddToCart || status !== 'idle') return
+  const handleAddToCart = useCallback(async (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+
+    if (!isInStock || status !== 'idle') return
+
+    if (product.hasOptions) {
+      navigate(getProductHref(product.slug))
+      return
+    }
+
+    if (!onAddToCart) return
     setStatus('adding')
     try {
       await onAddToCart(product.id)
@@ -28,28 +41,31 @@ export default function ProductListingCard({
       setTimeout(() => setStatus('idle'), 2000)
     } catch {
       setStatus('idle')
+      // If adding fails because option/customization is required by backend, redirect to detail page
+      navigate(getProductHref(product.slug))
     }
-  }, [onAddToCart, product.id, status])
+  }, [isInStock, status, product.hasOptions, product.slug, product.id, onAddToCart, navigate])
 
   const buttonText =
     status === 'adding' ? 'Adding…'
     : status === 'added' ? 'Added'
-    : isInStock ? 'Add to Cart'
-    : 'Unavailable'
+    : !isInStock ? 'Unavailable'
+    : product.hasOptions ? 'Select Options'
+    : 'Add to Cart'
 
   return (
     <article className="group flex h-full flex-col">
       <a
         href={getProductHref(product.slug)}
+        onMouseEnter={() => { api.products.getBySlug(product.slug).catch(() => {}) }}
         onClick={() => onProductSelect?.(product.slug)}
         className="flex flex-1 flex-col"
       >
         <div className="relative mb-4 aspect-square shrink-0 overflow-hidden rounded-2xl bg-white">
-          <img
+          <OptimizedImage
             src={product.imageUrl}
             alt={product.imageAlt}
-            loading="lazy"
-            decoding="async"
+            widthPreset="card"
             className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
           />
           {product.badge && (
@@ -100,4 +116,4 @@ export default function ProductListingCard({
       </button>
     </article>
   )
-}
+})

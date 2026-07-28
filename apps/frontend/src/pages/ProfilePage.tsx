@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useProfile } from '@/hooks/useProfile'
 import { useAuth } from '@/contexts/AuthContext'
-import Profile from '@/components/profile/Profile'
+import Profile from '@/components/Profile/Profile'
 
 export default function ProfilePage() {
   const { profileData, loading, updateProfile, deleteAddress } = useProfile()

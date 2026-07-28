@@ -3,6 +3,12 @@ import { z } from 'zod';
 
 config();
 
+const emptyStringToUndefined = <T extends z.ZodTypeAny>(schema: T) =>
+  z.preprocess(
+    (value) => (typeof value === 'string' && value.trim() === '' ? undefined : value),
+    schema.optional(),
+  );
+
 const envSchema = z.object({
   // Database
   DATABASE_URL: z.string().min(1, 'DATABASE_URL is required'),
@@ -64,14 +70,17 @@ const envSchema = z.object({
     .default('false')
     .transform((val) => val === 'true'),
 
-  // Razorpay (Optional for Phase 1)
+  // Razorpay — all three keys required together when payments are enabled
   RAZORPAY_KEY_ID: z.string().optional(),
   RAZORPAY_KEY_SECRET: z.string().optional(),
-  RAZORPAY_WEBHOOK_SECRET: z.string().optional(),
+  // SECURITY: This MUST be set whenever RAZORPAY_KEY_ID is set.
+  // Without it, Razorpay webhook signature verification is skipped,
+  // allowing forged payment events to mark orders as paid.
+  RAZORPAY_WEBHOOK_SECRET: z.string().min(1, 'RAZORPAY_WEBHOOK_SECRET is required when Razorpay is enabled').optional(),
 
   // Shiprocket (Optional for Phase 1)
-  SHIPROCKET_EMAIL: z.string().email().optional(),
-  SHIPROCKET_PASSWORD: z.string().optional(),
+  SHIPROCKET_EMAIL: emptyStringToUndefined(z.string().email()),
+  SHIPROCKET_PASSWORD: emptyStringToUndefined(z.string()),
 
   // Twilio SMS OTP (Optional in development, required for live OTP SMS)
   TWILIO_ACCOUNT_SID: z.string().optional(),
@@ -89,9 +98,9 @@ const envSchema = z.object({
     .string()
     .transform((val) => parseInt(val, 10))
     .default('587'),
-  SMTP_USER: z.string().optional(),
-  SMTP_PASS: z.string().optional(),
-  SMTP_FROM: z.string().email().optional(),
+  SMTP_USER: emptyStringToUndefined(z.string()),
+  SMTP_PASS: emptyStringToUndefined(z.string()),
+  SMTP_FROM: emptyStringToUndefined(z.string().email()),
 
   // Storage (Optional for Phase 1)
   STORAGE_ENDPOINT: z.string().optional(),
@@ -107,8 +116,8 @@ const envSchema = z.object({
   CLOUDINARY_API_SECRET: z.string().optional(),
 
   // Admin (Optional for Phase 1)
-  ADMIN_EMAIL: z.string().email().optional(),
-  ADMIN_PASSWORD: z.string().optional(),
+  ADMIN_EMAIL: emptyStringToUndefined(z.string().email()),
+  ADMIN_PASSWORD: emptyStringToUndefined(z.string()),
 });
 
 const parsedEnv = envSchema.safeParse(process.env);

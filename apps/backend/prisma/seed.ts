@@ -104,7 +104,7 @@ async function main(): Promise<void> {
         name: 'Digital Prints',
         description: 'High-resolution art prints on premium paper',
         sortOrder: 6,
-        image: 'https://images.unsplash.com/photo-1499781350541-7783f6c6a0c8?w=800&q=80',
+        image: 'https://images.unsplash.com/photo-1513519245088-0e12902e5a38?w=800&q=80',
       },
     }),
   ])
@@ -218,7 +218,7 @@ async function main(): Promise<void> {
       fontOptions: { fonts: ['Classic Serif', 'Modern Script', 'Block Caps', 'Cursive'], maxChars: 20 },
       specifications: { material: 'Sheesham Wood', engraving: 'Laser', customisation: 'Names + Date', sizes: '5×7 / 8×10' },
       images: [
-        { url: 'https://images.unsplash.com/photo-1518199266791-5375a83190b7?w=800&q=80', alt: 'Couple name frame', isPrimary: true, sortOrder: 0 },
+        { url: 'https://images.unsplash.com/photo-1513519245088-0e12902e5a38?w=800&q=80', alt: 'Couple name frame', isPrimary: true, sortOrder: 0 },
         { url: 'https://images.unsplash.com/photo-1474552226712-ac0f0961a954?w=800&q=80', alt: 'Couple name frame detail', sortOrder: 1 },
       ],
     },
@@ -394,8 +394,8 @@ async function main(): Promise<void> {
       sortOrder: 1,
     },
     {
-      image: 'https://images.unsplash.com/photo-1518199266791-5375a83190b7?w=1600&q=80',
-      mobileImage: 'https://images.unsplash.com/photo-1518199266791-5375a83190b7?w=800&q=80',
+      image: 'https://images.unsplash.com/photo-1513519245088-0e12902e5a38?w=1600&q=80',
+      mobileImage: 'https://images.unsplash.com/photo-1513519245088-0e12902e5a38?w=800&q=80',
       title: 'Custom Name Frames',
       subtitle: 'Personalised with love — from ₹799',
       link: '/shop?categoryId=custom-name-frames',
@@ -630,7 +630,7 @@ A gallery wall should take up 60-75% of a wall's width. Too small and it looks l
 9. **Recipe Frame** — Preserve grandma\'s handwritten recipe as wall art.
 10. **Friendship Collage** — Your best group photos in a collage for a friend moving away.`,
       excerpt: 'From anniversaries to baby showers, here are 10 personalised frame gift ideas that will be remembered.',
-      coverImage: 'https://images.unsplash.com/photo-1518199266791-5375a83190b7?w=1200&q=80',
+      coverImage: 'https://images.unsplash.com/photo-1513519245088-0e12902e5a38?w=1200&q=80',
       author: 'Frames41 Studio',
       publishedAt: new Date('2025-05-01'),
       isPublished: true,

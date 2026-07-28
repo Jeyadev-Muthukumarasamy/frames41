@@ -97,15 +97,10 @@ export class OrderRepository implements IOrderRepository {
   ): Promise<PaginatedResult<OrderWithRelations>> {
     const limit = Math.min(pagination.limit, PAGINATION.MAX_PAGE_SIZE);
 
-    const cursorCondition = pagination.cursor
-      ? { id: { gt: pagination.cursor } }
-      : {};
-
     const orders = await this.prisma.order.findMany({
-      where: {
-        userId,
-        ...cursorCondition,
-      },
+      where: { userId },
+      cursor: pagination.cursor ? { id: pagination.cursor } : undefined,
+      skip: pagination.cursor ? 1 : 0,
       take: limit + 1,
       orderBy: { placedAt: 'desc' },
       include: this.includeRelations,

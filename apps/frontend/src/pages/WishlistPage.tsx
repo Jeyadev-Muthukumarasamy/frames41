@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom'
 import { useWishlist } from '@/hooks/useWishlist'
 import { useCart } from '@/contexts/CartContext'
-import Wishlist from '@/components/wishlist/Wishlist'
+import Wishlist from '@/components/Wishlist/Wishlist'
 import { WISHLIST_BANNER } from '@/constants/wishlist'
 
 export default function WishlistPage() {
@@ -21,8 +21,8 @@ export default function WishlistPage() {
     <Wishlist
       items={items}
       banner={WISHLIST_BANNER}
-      onRemoveItem={(id) => remove(id)}
-      onAddToCart={(id) => {
+      onRemoveItem={(id: string) => remove(id)}
+      onAddToCart={(id: string) => {
         addItem(id, 1)
         navigate('/cart')
       }}

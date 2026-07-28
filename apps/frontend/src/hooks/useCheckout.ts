@@ -25,7 +25,7 @@ export function useCheckout() {
   const [couponCode, setCouponCode] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const orderPromiseRef = useRef<Promise<string | null> | null>(null)
-  const orderKeyRef = useRef(`checkout-${Date.now()}-${Math.random().toString(36).slice(2)}`)
+  const orderKeyRef = useRef<string | null>(null)
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -82,8 +82,8 @@ export function useCheckout() {
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const order = await api.orders.create(
-          { addressId, couponCode: code },
-          orderKeyRef.current,
+          { addressId, couponCode: code ?? undefined },
+          orderKeyRef.current ?? undefined,
         ) as any
         await refreshCart()
         return order.id as string

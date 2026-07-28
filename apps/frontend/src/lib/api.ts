@@ -16,12 +16,13 @@ import {
 const API_BASE = "/api/v1";
 
 // ─── Plain instance used only for token refresh (avoids interceptor loops) ───
-const plainAxios = axios.create({ baseURL: API_BASE });
+const plainAxios = axios.create({ baseURL: API_BASE, timeout: 10_000 });
 
 // ─── Main instance ─────────────────────────────────────────────────────────────
 const instance: AxiosInstance = axios.create({
   baseURL: API_BASE,
   headers: { "Content-Type": "application/json" },
+  timeout: 15_000, // 15 s — prevents the UI hanging on a stalled backend request
 });
 
 // ─── Refresh queue to prevent concurrent refresh races ─────────────────────
@@ -30,6 +31,7 @@ let refreshQueue: Array<(token: string) => void> = [];
 let rejectQueue: Array<(err: unknown) => void> = [];
 let proactiveRefresh: Promise<string> | null = null;
 const inFlightGets = new Map<string, Promise<unknown>>();
+const getCache = new Map<string, { data: unknown; at: number }>();
 
 function dedupeGet<T>(key: string, request: () => Promise<T>): Promise<T> {
   const existing = inFlightGets.get(key);
@@ -37,6 +39,23 @@ function dedupeGet<T>(key: string, request: () => Promise<T>): Promise<T> {
   const promise = request().finally(() => inFlightGets.delete(key));
   inFlightGets.set(key, promise);
   return promise;
+}
+
+function cachedGet<T>(
+  key: string,
+  request: () => Promise<T>,
+  ttlMs: number,
+): Promise<T> {
+  return dedupeGet(key, () => {
+    const cached = getCache.get(key);
+    if (cached && Date.now() - cached.at < ttlMs) {
+      return Promise.resolve(cached.data as T);
+    }
+    return request().then((data) => {
+      getCache.set(key, { data, at: Date.now() });
+      return data;
+    });
+  });
 }
 
 function refreshAccessToken(): Promise<string> {
@@ -188,7 +207,8 @@ function unwrapPaginated<T>(promise: Promise<AxiosResponse>): Promise<PaginatedR
 // ─── API namespace ─────────────────────────────────────────────────────────────
 export const api = {
   home: {
-    get: () => unwrap<Record<string, unknown>>(instance.get("/home")),
+    get: () =>
+      cachedGet("home", () => unwrap<Record<string, unknown>>(instance.get("/home")), 60_000),
   },
   auth: {
     phoneLogin: (phone: string) =>
@@ -234,10 +254,12 @@ export const api = {
 
   products: {
     getProducts: (params?: Record<string, unknown>) =>
-      unwrapPaginated<unknown>(instance.get("/products", { params })),
-    getById: (id: string) => unwrap<unknown>(instance.get(`/products/${id}`)),
+      cachedGet(`products:list:${JSON.stringify(params ?? {})}`, () =>
+        unwrapPaginated<unknown>(instance.get("/products", { params })), 60_000),
+    getById: (id: string) =>
+      cachedGet(`products:id:${id}`, () => unwrap<unknown>(instance.get(`/products/${id}`)), 300_000),
     getBySlug: (slug: string) =>
-      unwrap<unknown>(instance.get(`/products/by-slug/${slug}`)),
+      cachedGet(`products:slug:${slug}`, () => unwrap<unknown>(instance.get(`/products/by-slug/${slug}`)), 300_000),
     searchProducts: (q: string, params?: Record<string, unknown>) =>
       unwrapPaginated<unknown>(
         instance.get("/products/search", { params: { q, ...params } }),
@@ -250,9 +272,9 @@ export const api = {
 
   categories: {
     getTree: (params?: Record<string, unknown>) =>
-      unwrap<unknown[]>(instance.get("/categories/tree", { params })),
+      cachedGet(`categories:tree:${JSON.stringify(params ?? {})}`, () => unwrap<unknown[]>(instance.get("/categories/tree", { params })), 120_000),
     getBySlug: (slug: string) =>
-      unwrap<unknown>(instance.get(`/categories/by-slug/${slug}`)),
+      cachedGet(`categories:slug:${slug}`, () => unwrap<unknown>(instance.get(`/categories/by-slug/${slug}`)), 120_000),
   },
 
   banners: {
@@ -273,7 +295,21 @@ export const api = {
     uploadPhoto: (file: File) => {
       const form = new FormData();
       form.append("image", file);
-      return unwrap<{ url: string }>(instance.post("/cart/upload-photo", form, {
+      return unwrap<{ url: string; urls?: string[] }>(instance.post("/cart/upload-photo", form, {
+        headers: { "Content-Type": "multipart/form-data" },
+      }));
+    },
+    uploadPhotos: (files: File[]) => {
+      if (files.length === 0) return Promise.resolve({ urls: [], url: "" });
+      if (files.length === 1) {
+        return api.cart.uploadPhoto(files[0]).then((res) => ({
+          urls: res.urls ?? [res.url],
+          url: res.url,
+        }));
+      }
+      const form = new FormData();
+      files.forEach((file) => form.append("images", file));
+      return unwrap<{ urls: string[]; url: string }>(instance.post("/cart/upload-photos/batch", form, {
         headers: { "Content-Type": "multipart/form-data" },
       }));
     },

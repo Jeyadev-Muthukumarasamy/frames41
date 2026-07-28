@@ -7,13 +7,15 @@
   ],
   "scripts": {
     "install:all": "npm install",
-    "dev": "concurrently \"npm run dev:frontend\" \"npm run dev:admin\" \"npm run dev:backend\"",
+    "dev": "concurrently \"npm run dev:frontend\" \"npm run dev:admin\"",
+    "dev:full": "concurrently \"npm run dev:frontend\" \"npm run dev:admin\" \"npm run dev:backend\"",
     "dev:frontend": "npm run dev -w apps/frontend",
     "dev:admin": "npm run dev -w apps/admin",
     "dev:backend": "npm run dev -w apps/backend",
     "build:frontend": "npm run build -w apps/frontend",
     "build:admin": "npm run build -w apps/admin",
-    "build:backend": "npm run build -w apps/backend"
+    "build:backend": "npm run build -w apps/backend",
+    "lint": "npm run lint -w apps/frontend && npm run lint -w apps/admin"
   },
   "devDependencies": {
     "concurrently": "^10.0.4"

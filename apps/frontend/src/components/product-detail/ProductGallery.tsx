@@ -10,7 +10,6 @@ export default function ProductGallery({ images }: ProductGalleryProps) {
   const [selectedIndex, setSelectedIndex] = useState(0)
 
   const selectedImage = images[selectedIndex]
-  const thumbnails = images.slice(1)
 
   return (
     <div className="lg:col-span-7 flex flex-col gap-4">
@@ -33,10 +32,9 @@ export default function ProductGallery({ images }: ProductGalleryProps) {
       <div
         role="tablist"
         aria-label="Product images"
-        className="grid grid-cols-4 sm:grid-cols-4 gap-2 sm:gap-4"
+        className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 gap-2 sm:gap-3"
       >
-        {thumbnails.map((image, i) => {
-          const index = i + 1
+        {images.map((image, index) => {
           const isActive = selectedIndex === index
 
           return (

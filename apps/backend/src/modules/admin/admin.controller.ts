@@ -14,6 +14,32 @@ export class AdminController {
   }
 
   /**
+   * Get combined dashboard data (stats + analytics + topProducts in 1 API call)
+   */
+  getCombinedDashboard = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const period = (req.query.period as string) || 'day';
+      const startDate = req.query.startDate ? new Date(req.query.startDate as string) : undefined;
+      const endDate = req.query.endDate ? new Date(req.query.endDate as string) : undefined;
+      const limit = Math.min(50, Math.max(1, parseInt(req.query.limit as string, 10) || 10));
+
+      const [stats, analytics, topProducts] = await Promise.all([
+        this.service.getDashboardStats(),
+        this.service.getAnalytics(period, startDate, endDate),
+        this.service.getTopProducts(limit, startDate, endDate),
+      ]);
+
+      res.status(200).json({
+        success: true,
+        data: { stats, analytics, topProducts },
+        meta: { timestamp: new Date().toISOString() },
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  /**
    * Get dashboard stats
    */
   getDashboardStats = async (req: Request, res: Response, next: NextFunction): Promise<void> => {

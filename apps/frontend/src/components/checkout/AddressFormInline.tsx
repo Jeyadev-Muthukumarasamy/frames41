@@ -52,8 +52,9 @@ export default function AddressFormInline({ onSave, onCancel }: AddressFormInlin
     if (!form.phone.trim()) e.phone = 'Phone number is required'
     else if (!/^\d{10}$/.test(form.phone.replace(/\D/g, ''))) e.phone = 'Enter a valid 10-digit number'
     if (!form.line1.trim()) e.line1 = 'Street address is required'
+    else if (form.line1.trim().length < 3) e.line1 = 'Address must be at least 3 characters'
     if (!form.city.trim()) e.city = 'City is required'
-    if (!form.state.trim()) e.state = 'State is required'
+    if (!form.state.trim()) e.state = 'Please select a state'
     if (!form.pincode.trim()) e.pincode = 'Pincode is required'
     else if (!/^\d{6}$/.test(form.pincode.trim())) e.pincode = 'Enter a valid 6-digit pincode'
     setErrors(e)
@@ -67,8 +68,25 @@ export default function AddressFormInline({ onSave, onCancel }: AddressFormInlin
     setSubmitError(null)
     try {
       await onSave(form)
-    } catch (err) {
-      setSubmitError(err instanceof Error ? err.message : 'Failed to save address. Please try again.')
+    } catch (err: unknown) {
+      // Surface structured field-level errors from the backend (Zod 422 details)
+      const axiosErr = err as { response?: { data?: { error?: { details?: { field: string; message: string }[] } } } }
+      const details = axiosErr?.response?.data?.error?.details
+      if (details && details.length > 0) {
+        const fieldErrors: Partial<Record<keyof AddressFormData, string>> = {}
+        for (const d of details) {
+          // Strip the 'body.' prefix the backend adds
+          const key = d.field.replace(/^body\./, '') as keyof AddressFormData
+          if (key in form) fieldErrors[key] = d.message
+        }
+        if (Object.keys(fieldErrors).length > 0) {
+          setErrors(fieldErrors)
+        } else {
+          setSubmitError(details.map((d) => d.message).join(', '))
+        }
+      } else {
+        setSubmitError(err instanceof Error ? err.message : 'Failed to save address. Please try again.')
+      }
     } finally {
       setSaving(false)
     }

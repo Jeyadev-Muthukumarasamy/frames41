@@ -30,7 +30,27 @@ export function useReferral() {
     }
   }, [])
 
-  useEffect(() => { fetchReferral() }, [fetchReferral])
+  useEffect(() => {
+    let isMounted = true
+    Promise.all([
+      api.referrals.getMyCode().catch(() => null),
+      api.referrals.getHistory().catch(() => []),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ]).then(([codeRes, historyRes]: any[]) => {
+      if (!isMounted) return
+      const history = historyRes ?? []
+      setData({
+        code: codeRes?.code ?? '',
+        stats: adaptReferralStats(codeRes, history),
+        history: history.map(adaptReferralEntry),
+        heroImageUrl: '',
+        heroImageAlt: 'Refer a friend',
+      })
+    }).catch(() => {}).finally(() => {
+      if (isMounted) setLoading(false)
+    })
+    return () => { isMounted = false }
+  }, [])
 
   const createCode = useCallback(async () => {
     await api.referrals.createCode({ discountPercent: 10, commissionPercent: 5 })

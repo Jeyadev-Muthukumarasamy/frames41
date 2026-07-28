@@ -40,6 +40,7 @@ export function createAdminRoutes(): Router {
   router.use(requireAdmin);
 
   // Dashboard
+  router.get('/dashboard', controller.getCombinedDashboard);
   router.get('/dashboard/stats', controller.getDashboardStats);
   router.get('/dashboard/analytics', validate(analyticsQuerySchema), controller.getAnalytics);
   router.get('/dashboard/top-products', validate(topProductsQuerySchema), controller.getTopProducts);
@@ -60,6 +61,7 @@ export function createAdminRoutes(): Router {
 
   // Upload
   router.post('/upload', ...uploadController.uploadImage);
+  router.post('/upload/batch', ...uploadController.uploadBatchImages);
 
   return router;
 }

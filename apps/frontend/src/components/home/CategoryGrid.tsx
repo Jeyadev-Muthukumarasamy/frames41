@@ -1,13 +1,14 @@
-import { useState } from 'react'
+import { memo } from 'react'
 import type { Category } from '../../types/home'
 import Icon from '../ui/Icon'
+import OptimizedImage from '../ui/OptimizedImage'
 
 interface CategoryCardProps {
   category: Category
   index: number
 }
 
-function CategoryCard({ category, index }: CategoryCardProps) {
+const CategoryCard = memo(function CategoryCard({ category, index }: CategoryCardProps) {
   const isWide = category.span === 'wide'
 
   // Desktop spans (md+)
@@ -28,28 +29,16 @@ function CategoryCard({ category, index }: CategoryCardProps) {
   // Desktop heights
   const mdHeightClass = 'md:h-[500px]'
 
-  const [imgError, setImgError] = useState(false)
-  const hasImage = category.imageUrl && !imgError
-
   return (
     <article
       className={`${mobileSpanClass} ${mdSpanClass} ${mobileHeightClass} ${mdHeightClass} group relative overflow-hidden rounded-2xl`}
     >
-      {hasImage ? (
-        <img
-          src={category.imageUrl}
-          alt={category.imageAlt}
-          loading="lazy"
-          onError={() => setImgError(true)}
-          className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
-        />
-      ) : (
-        <div className="w-full h-full bg-gradient-to-br from-neutral-300 to-neutral-400 flex items-center justify-center">
-          <span className="text-neutral-500 text-sm font-medium uppercase tracking-widest">
-            {category.title}
-          </span>
-        </div>
-      )}
+      <OptimizedImage
+        src={category.imageUrl}
+        alt={category.imageAlt}
+        widthPreset={isWide ? 'banner' : 'card'}
+        className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
+      />
       <div
         aria-hidden="true"
         className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors duration-500"
@@ -72,7 +61,7 @@ function CategoryCard({ category, index }: CategoryCardProps) {
       </div>
     </article>
   )
-}
+})
 
 interface CategoryGridProps {
   categories: ReadonlyArray<Category>

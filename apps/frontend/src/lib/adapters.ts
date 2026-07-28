@@ -145,12 +145,16 @@ export function adaptCategoryProductSection(c: Raw): CategoryProductSection {
 
 // ─── Cart ─────────────────────────────────────────────────────────────────────
 export function adaptCartItem(item: Raw): CartLineItem {
+  const customImg =
+    item.customImageUrl ||
+    item.customization?.customImageUrl ||
+    (Array.isArray(item.customization?.imageUrls) ? item.customization.imageUrls[0] : undefined)
   return {
     id: item.id,
     name: item.productName ?? item.product?.name ?? '',
     variant: item.variantName ?? '',
     priceInr: Number(item.unitPrice),
-    imageUrl: item.productImage ?? item.product?.images?.[0]?.url ?? '',
+    imageUrl: customImg || item.productImage || item.product?.images?.[0]?.url || '',
     imageAlt: item.productName ?? item.product?.name ?? '',
     quantity: item.quantity,
     inStock: true,
@@ -201,12 +205,16 @@ export function adaptProfileAddress(a: Raw): ProfileAddress {
 
 // ─── Checkout ─────────────────────────────────────────────────────────────────
 export function adaptCheckoutLineItem(item: Raw): CheckoutLineItem {
+  const customImg =
+    item.customImageUrl ||
+    item.customization?.customImageUrl ||
+    (Array.isArray(item.customization?.imageUrls) ? item.customization.imageUrls[0] : undefined)
   return {
     id: item.id,
     name: item.productName ?? '',
     variant: item.variantName ?? '',
     priceInr: Number(item.unitPrice),
-    imageUrl: item.productImage ?? item.product?.images?.[0]?.url ?? '',
+    imageUrl: customImg || item.productImage || item.product?.images?.[0]?.url || '',
     imageAlt: item.product?.images?.[0]?.alt ?? item.productName ?? '',
   }
 }
@@ -291,14 +299,23 @@ export function adaptReferralStats(_code: Raw, history: Raw[]): ReferralStats {
 // ─── Order Confirm ────────────────────────────────────────────────────────────
 export function adaptOrderItem(item: Raw): OrderItem {
   const snap = item.productSnapshot ?? {}
+  const imgUrl =
+    item.customImageUrl ||
+    item.customization?.customImageUrl ||
+    (Array.isArray(item.customization?.imageUrls) ? item.customization.imageUrls[0] : undefined) ||
+    snap.image ||
+    snap.imageUrl ||
+    snap.images?.[0]?.url ||
+    item.product?.images?.[0]?.url ||
+    ''
   return {
     id: item.id,
     name: snap.name ?? item.productId,
     description: snap.shortDescription ?? '',
     priceInr: Number(item.unitPrice),
     quantity: item.quantity,
-    imageUrl: snap.images?.[0]?.url ?? '',
-    imageAlt: snap.images?.[0]?.alt ?? '',
+    imageUrl: imgUrl,
+    imageAlt: snap.imageAlt ?? snap.images?.[0]?.alt ?? snap.name ?? '',
   }
 }
 
@@ -365,6 +382,15 @@ export function adaptOrderTracking(order: Raw): OrderTrackingData {
 
   const items: TrackingOrderItem[] = (order.items ?? []).map((item: Raw) => {
     const snap = item.productSnapshot ?? {}
+    const imgUrl =
+      item.customImageUrl ||
+      item.customization?.customImageUrl ||
+      (Array.isArray(item.customization?.imageUrls) ? item.customization.imageUrls[0] : undefined) ||
+      snap.image ||
+      snap.imageUrl ||
+      snap.images?.[0]?.url ||
+      item.product?.images?.[0]?.url ||
+      ''
     return {
       id: item.id,
       name: snap.name ?? '',
@@ -372,8 +398,8 @@ export function adaptOrderTracking(order: Raw): OrderTrackingData {
       size: item.customization?.size ?? '',
       quantity: item.quantity,
       priceInr: Number(item.unitPrice),
-      imageUrl: snap.images?.[0]?.url ?? '',
-      imageAlt: snap.images?.[0]?.alt ?? '',
+      imageUrl: imgUrl,
+      imageAlt: snap.imageAlt ?? snap.images?.[0]?.alt ?? snap.name ?? '',
     }
   })
 

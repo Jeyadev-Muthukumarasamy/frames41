@@ -33,7 +33,28 @@ export function useWishlist() {
     }
   }, [isAuthenticated])
 
-  useEffect(() => { fetchWishlist() }, [fetchWishlist])
+  useEffect(() => {
+    let isMounted = true
+    if (!isAuthenticated) {
+      setItems([])
+      setWishlistedIds(new Set())
+      setLoading(false)
+      return
+    }
+    api.wishlist.get().then((raw: any) => {
+      if (!isMounted) return
+      const adapted = (raw ?? []).map(adaptWishlistItem)
+      setItems(adapted)
+      setWishlistedIds(new Set(adapted.map((i: any) => i.id)))
+    }).catch(() => {
+      if (!isMounted) return
+      setItems([])
+      setWishlistedIds(new Set())
+    }).finally(() => {
+      if (isMounted) setLoading(false)
+    })
+    return () => { isMounted = false }
+  }, [isAuthenticated])
 
   const toggle = useCallback(async (productId: string) => {
     if (!isAuthenticated) return

@@ -46,9 +46,9 @@ export default function Payment({ summary, onPaymentSubmit, externalStatus }: Pa
     <div className="min-h-screen bg-background text-on-background font-sans flex flex-col">
       <Navbar links={NAV_LINKS} />
 
-      <main className="flex-1 pt-28 sm:pt-32 pb-section max-w-container-max mx-auto w-full px-4 sm:px-6">
-        <header className="mb-6 sm:mb-12">
-          <h1 className="font-headline-lg text-2xl sm:text-headline-lg mb-2 sm:mb-4">Payment Method</h1>
+      <main className="flex-1 pt-6 sm:pt-8 pb-section max-w-container-max mx-auto w-full px-4 sm:px-6">
+        <header className="mb-4 sm:mb-6">
+          <h1 className="font-headline-lg text-2xl sm:text-headline-lg mb-1 sm:mb-2">Payment Method</h1>
           <p className="font-body-md text-on-surface-variant max-w-md text-sm sm:text-body-md">
             Secure checkout powered by Frames41. Select your preferred method of payment to
             complete your order.

@@ -19,12 +19,20 @@ export default function ProductDetailPage() {
     return (
       <>
         <Navbar links={NAV_LINKS} />
-        <main className="flex min-h-[60vh] items-center justify-center bg-surface-container-low/40">
-          <div className="flex flex-col items-center gap-3 text-on-background/60">
-            <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-            <p className="text-sm">Preparing your product details…</p>
-          </div>
-        </main>
+        <div className="bg-surface-container-low/40">
+          <main className="mx-auto max-w-container px-4 py-8 sm:px-6">
+            <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
+              <div className="aspect-square w-full rounded-2xl bg-gray-200 animate-pulse" />
+              <div className="flex flex-col gap-4">
+                <div className="h-4 w-32 rounded bg-gray-200 animate-pulse" />
+                <div className="h-8 w-3/4 rounded bg-gray-200 animate-pulse" />
+                <div className="h-6 w-1/4 rounded bg-gray-200 animate-pulse" />
+                <div className="h-20 w-full rounded bg-gray-200 animate-pulse" />
+                <div className="h-12 w-full rounded-full bg-gray-200 animate-pulse mt-4" />
+              </div>
+            </div>
+          </main>
+        </div>
         <Footer columns={FOOTER_COLUMNS} socialLinks={SOCIAL_LINKS} />
       </>
     )

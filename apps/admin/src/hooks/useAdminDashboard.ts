@@ -22,11 +22,7 @@ export function useAdminDashboard(period: Period, startDate?: string, endDate?: 
   const fetch = useCallback(async () => {
     setData((d) => ({ ...d, loading: true, error: null }))
     try {
-      const [stats, analytics, topProducts] = await Promise.all([
-        api.admin.getDashboardStats(),
-        api.admin.getAnalytics(period, startDate, endDate),
-        api.admin.getTopProducts(10, startDate, endDate),
-      ])
+      const { stats, analytics, topProducts } = await api.admin.getDashboard(period, startDate, endDate, 10)
       setData({ stats, analytics, topProducts, loading: false, error: null })
     } catch (err) {
       setData((d) => ({

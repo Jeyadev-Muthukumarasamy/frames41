@@ -166,14 +166,53 @@ export class ProductRepository implements IProductRepository {
     return result;
   }
 
+  private async enrichItemContext(product: ProductWithRelations | null): Promise<ProductWithRelations | null> {
+    if (!product) return null;
+
+    const [reviewAggregate, ratingBreakdown, relatedProducts] = await Promise.all([
+      this.prisma.review.aggregate({
+        where: { productId: product.id, isApproved: true },
+        _avg: { rating: true },
+        _count: { _all: true },
+      }),
+      this.prisma.review.groupBy({
+        by: ['rating'],
+        where: { productId: product.id, isApproved: true },
+        _count: { _all: true },
+      }),
+      this.prisma.product.findMany({
+        where: { categoryId: product.categoryId, id: { not: product.id }, isActive: true },
+        take: 4,
+        orderBy: [{ isFeatured: 'desc' }, { createdAt: 'desc' }],
+        include: this.listRelations,
+      }),
+    ]);
+
+    const distMap: Record<number, number> = {};
+    ratingBreakdown.forEach((item) => {
+      distMap[item.rating] = item._count._all;
+    });
+
+    return {
+      ...product,
+      reviewSummary: {
+        totalReviews: reviewAggregate._count._all || 0,
+        averageRating: reviewAggregate._avg.rating || 0,
+        ratingDistribution: distMap,
+      },
+      relatedProducts,
+    } as unknown as ProductWithRelations;
+  }
+
   async findById(id: string): Promise<ProductWithRelations | null> {
     const cacheKey = `id:${id}`;
     const cached = productCatalogCache.get(cacheKey);
     if (cached) return cached as ProductWithRelations;
-    const product = await this.prisma.product.findUnique({
+    const raw = await this.prisma.product.findUnique({
       where: { id },
       include: this.includeRelations,
     }) as ProductWithRelations | null;
+    const product = await this.enrichItemContext(raw);
     if (product) productCatalogCache.set(cacheKey, product);
     return product;
   }
@@ -182,10 +221,11 @@ export class ProductRepository implements IProductRepository {
     const cacheKey = `slug:${slug}`;
     const cached = productCatalogCache.get(cacheKey);
     if (cached) return cached as ProductWithRelations;
-    const product = await this.prisma.product.findUnique({
+    const raw = await this.prisma.product.findUnique({
       where: { slug },
       include: this.includeRelations,
     }) as ProductWithRelations | null;
+    const product = await this.enrichItemContext(raw);
     if (product) productCatalogCache.set(cacheKey, product);
     return product;
   }

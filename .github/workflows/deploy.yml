@@ -1,0 +1,190 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches: [main]
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false   # Never cancel an in-flight deploy
+
+env:
+  NODE_VERSION: "20"
+
+jobs:
+  # ─── Gate: CI must pass before deploy runs ───────────────────────────────────
+  pre-deploy-checks:
+    name: Pre-Deploy Validation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+
+      - run: npm ci --workspaces
+
+      - name: Lint all workspaces
+        run: npm run lint
+
+      - name: Build all workspaces
+        run: |
+          npm run build -w apps/backend
+          npm run build -w apps/frontend
+          npm run build -w apps/admin
+
+      - name: Verify no high-severity vulnerabilities
+        run: npm audit --audit-level=high
+
+  # ─── Deploy Backend to Railway ───────────────────────────────────────────────
+  deploy-backend:
+    name: Deploy Backend (Railway)
+    runs-on: ubuntu-latest
+    needs: [pre-deploy-checks]
+    environment:
+      name: production
+      url: https://frames41-production.up.railway.app
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Railway CLI
+        run: npm install -g @railway/cli
+
+      - name: Deploy to Railway
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+        run: |
+          railway up \
+            --service frames41-backend \
+            --detach
+
+      - name: Wait for Railway health check
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+        run: |
+          echo "Waiting for service to become healthy..."
+          for i in $(seq 1 12); do
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+              https://frames41-production.up.railway.app/api/v1/health || echo "000")
+            if [ "$STATUS" = "200" ]; then
+              echo "PASS Backend healthy (attempt $i)"
+              exit 0
+            fi
+            echo "Attempt $i: status=$STATUS, retrying in 10s..."
+            sleep 10
+          done
+          echo "FAIL Backend did not become healthy within 120s"
+          exit 1
+
+  # ─── Deploy Frontend to Vercel ───────────────────────────────────────────────
+  deploy-frontend:
+    name: Deploy Frontend (Vercel)
+    runs-on: ubuntu-latest
+    needs: [pre-deploy-checks]
+    environment:
+      name: production
+      url: https://frames41.com
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+
+      - run: npm ci -w apps/frontend
+
+      - name: Build frontend
+        run: npm run build -w apps/frontend
+        env:
+          VITE_API_URL: ${{ secrets.VITE_API_URL }}
+          VITE_RAZORPAY_KEY_ID: ${{ secrets.VITE_RAZORPAY_KEY_ID }}
+          VITE_CLOUDINARY_CLOUD_NAME: ${{ secrets.VITE_CLOUDINARY_CLOUD_NAME }}
+
+      - name: Deploy to Vercel (Production)
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_FRONTEND_PROJECT_ID }}
+          working-directory: apps/frontend
+          vercel-args: "--prod"
+
+  # ─── Deploy Admin to Vercel ──────────────────────────────────────────────────
+  deploy-admin:
+    name: Deploy Admin Dashboard (Vercel)
+    runs-on: ubuntu-latest
+    needs: [pre-deploy-checks]
+    environment:
+      name: production
+      url: https://admin.frames41.com
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+
+      - run: npm ci -w apps/admin
+
+      - name: Build admin
+        run: npm run build -w apps/admin
+        env:
+          VITE_API_URL: ${{ secrets.VITE_API_URL }}
+
+      - name: Deploy to Vercel (Production)
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_ADMIN_PROJECT_ID }}
+          working-directory: apps/admin
+          vercel-args: "--prod"
+
+  # ─── Post-Deploy Smoke Test ──────────────────────────────────────────────────
+  smoke-test:
+    name: Post-Deploy Smoke Test
+    runs-on: ubuntu-latest
+    needs: [deploy-backend, deploy-frontend, deploy-admin]
+    steps:
+      - name: Check API health
+        run: |
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+            https://frames41-production.up.railway.app/api/v1/health)
+          if [ "$STATUS" != "200" ]; then
+            echo "FAIL API health check failed: HTTP $STATUS"
+            exit 1
+          fi
+          echo "PASS API health: HTTP $STATUS"
+
+      - name: Check frontend homepage
+        run: |
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://frames41.com)
+          if [ "$STATUS" != "200" ]; then
+            echo "FAIL Frontend not reachable: HTTP $STATUS"
+            exit 1
+          fi
+          echo "PASS Frontend: HTTP $STATUS"
+
+      - name: Notify on success
+        if: success()
+        run: echo "All smoke tests passed. Production deploy complete."
+
+  # ─── Rollback on Smoke Test Failure ─────────────────────────────────────────
+  rollback:
+    name: Rollback on Failure
+    runs-on: ubuntu-latest
+    needs: [smoke-test]
+    if: failure()
+    steps:
+      - name: Rollback Railway deployment
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+        run: |
+          echo "Smoke test failed — rolling back Railway to previous deployment"
+          npm install -g @railway/cli
+          railway rollback --service frames41-backend
+          echo "WARN Rollback initiated. Check Railway dashboard for status."

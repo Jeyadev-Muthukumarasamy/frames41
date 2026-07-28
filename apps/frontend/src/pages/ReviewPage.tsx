@@ -1,6 +1,6 @@
 import { useSearchParams } from 'react-router-dom'
 import { useReviews } from '@/hooks/useReviews'
-import Review from '@/components/review/Review'
+import Review from '@/components/Review/Review'
 
 export default function ReviewPage() {
   const [searchParams] = useSearchParams()

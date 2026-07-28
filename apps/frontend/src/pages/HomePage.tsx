@@ -50,7 +50,7 @@ export default function HomePage() {
           </button>
         </div>
 
-        {loading ? (
+        {loading && !newCollections.length ? (
           <ProductSectionShimmer
             title="New Collections"
             eyebrow="Just In"
@@ -60,7 +60,7 @@ export default function HomePage() {
         ) : (
           <NewCollectionsSection products={newCollections} />
         )}
-        {loading ? (
+        {loading && !categorySections.length ? (
           <ProductSectionShimmer title="Categories" count={4} />
         ) : (
           <CategoryProductsSection
@@ -68,7 +68,7 @@ export default function HomePage() {
             onAddToCart={(productId) => addItem(productId, 1)}
           />
         )}
-        {loading ? (
+        {loading && !budgetProducts.length ? (
           <ProductSectionShimmer
             title="Under ₹999"
             eyebrow="Value Picks"
@@ -78,7 +78,7 @@ export default function HomePage() {
         ) : (
           <BudgetSection products={budgetProducts} priceLimit={999} />
         )}
-        {loading ? (
+        {loading && !bestsellers.length ? (
           <ProductSectionShimmer title="Bestsellers" count={3} layout="wide" />
         ) : (
           <BestsellersSection

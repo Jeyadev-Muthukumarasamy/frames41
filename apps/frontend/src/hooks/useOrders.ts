@@ -44,7 +44,28 @@ export function useOrderList() {
     }
   }, [])
 
-  useEffect(() => { fetchOrders() }, [fetchOrders])
+  useEffect(() => {
+    let isMounted = true
+    api.orders.list({ limit: 10 }).then((res: any) => {
+      if (!isMounted) return
+      const items = (res?.orders ?? res?.data ?? res ?? []).map(
+        (o: any): OrderListItem => ({
+          id: o.id,
+          orderNumber: o.orderNumber,
+          status: o.status,
+          total: Number(o.total),
+          placedAt: o.placedAt,
+          itemCount: o.items?.length ?? 0,
+        }),
+      )
+      setOrders(items)
+      setCursor(res?.nextCursor ?? null)
+      setHasMore(res?.hasMore ?? false)
+    }).catch(() => {}).finally(() => {
+      if (isMounted) setLoading(false)
+    })
+    return () => { isMounted = false }
+  }, [])
 
   const loadMore = useCallback(() => {
     if (cursor) fetchOrders(cursor)

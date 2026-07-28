@@ -27,6 +27,15 @@ function normalizeBanner(banner: BannerResponse): Banner | null {
   }
 }
 
+function asProductList(value: unknown): unknown[] {
+  if (Array.isArray(value)) return value
+  if (value && typeof value === 'object') {
+    const obj = value as { products?: unknown[]; data?: unknown[] }
+    return obj.products ?? obj.data ?? []
+  }
+  return []
+}
+
 export function useHomePage() {
   const [categorySections, setCategorySections] = useState<CategoryProductSection[]>([])
   const [budgetProducts, setBudgetProducts] = useState<Product[]>([])
@@ -36,90 +45,40 @@ export function useHomePage() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    setLoading(true)
-    Promise.allSettled([
-      api.home.get(),
-      api.banners.getByType('HEADER_SLIDER'),
-    ])
-      .then(async ([homeResult, bannersResult]) => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const home: any = homeResult.status === 'fulfilled' ? homeResult.value : {}
-        const cats = home.categories ?? []
-        const budget = home.budgetProducts ?? []
-        const best = home.bestsellers ?? []
-        const recent = home.newCollections ?? []
-        const embeddedSections = (cats ?? []).map(adaptCategoryProductSection)
-        const categoriesMissingProducts = embeddedSections.filter(
-          (section: CategoryProductSection) => section.products.length === 0,
-        )
-        let resolvedSections: CategoryProductSection[]
+    let cancelled = false
 
-        if (categoriesMissingProducts.length > 0) {
-          const productResults = await Promise.allSettled(
-            categoriesMissingProducts.map((section: CategoryProductSection) =>
-              api.products.getProducts({
-                categoryId: section.id,
-                limit: 4,
-                sort: 'featured',
-              }),
-            ),
-          )
+    api.home.get()
+      .then((home) => {
+        if (cancelled) return
 
-          const fallbackProducts = new Map<string, Product[]>()
-          productResults.forEach((result, index) => {
-            if (result.status !== 'fulfilled') return
-            const response = result.value as {
-              products?: unknown[]
-              data?: unknown[]
-            } | unknown[]
-            const rawProducts = Array.isArray(response)
-              ? response
-              : response.products ?? response.data ?? []
-            fallbackProducts.set(
-              categoriesMissingProducts[index].id,
-              rawProducts.map(adaptProduct),
-            )
-          })
+        const rawCategories = (Array.isArray(home.categories) ? home.categories : []) as any[]
+        const sections = rawCategories
+          .map(adaptCategoryProductSection)
+          .filter((section: CategoryProductSection) => section.products.length > 0)
 
-          resolvedSections = embeddedSections
-            .map((section: CategoryProductSection) =>
-              section.products.length > 0
-                ? section
-                : {
-                    ...section,
-                    products: fallbackProducts.get(section.id) ?? [],
-                  },
-            )
-            .filter((section: CategoryProductSection) => section.products.length > 0)
-        } else {
-          resolvedSections = embeddedSections.filter(
-            (section: CategoryProductSection) => section.products.length > 0,
-          )
-        }
-
-        setCategorySections(resolvedSections)
-        setBudgetProducts((budget?.products ?? budget?.data ?? budget ?? []).map(adaptProduct))
-        setBestsellers((best?.products ?? best?.data ?? best ?? []).map(adaptProduct))
-        setNewCollections((recent?.products ?? recent?.data ?? recent ?? []).map(adaptProduct).slice(0, 8))
+        setCategorySections(sections)
+        setBudgetProducts(asProductList(home.budgetProducts).map(adaptProduct))
+        setBestsellers(asProductList(home.bestsellers).map(adaptProduct))
+        setNewCollections(asProductList(home.newCollections).map(adaptProduct).slice(0, 8))
 
         const homeBanners = home.heroBanners ?? (home.heroBanner ? [home.heroBanner] : [])
-        const rawBanners = bannersResult.status === 'fulfilled'
-          ? bannersResult.value
-          : homeBanners
-        const normalizedBanners = (rawBanners as BannerResponse[])
-          .map(normalizeBanner)
-          .filter((banner): banner is Banner => banner?.type === 'HEADER_SLIDER')
-          .sort((a, b) => a.sortOrder - b.sortOrder)
-        setHeroBanners(normalizedBanners)
-
-        if (homeResult.status === 'rejected') {
-          console.error('[useHomePage] Home page data fetch failed:', homeResult.reason)
-        }
-        if (bannersResult.status === 'rejected') {
-          console.error('[useHomePage] Header banners fetch failed:', bannersResult.reason)
-        }
+        setHeroBanners(
+          (homeBanners as BannerResponse[])
+            .map(normalizeBanner)
+            .filter((banner): banner is Banner => banner?.type === 'HEADER_SLIDER')
+            .sort((a, b) => a.sortOrder - b.sortOrder),
+        )
       })
-      .finally(() => setLoading(false))
+      .catch((err) => {
+        if (!cancelled) console.error('[useHomePage] Home page data fetch failed:', err)
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false)
+      })
+
+    return () => {
+      cancelled = true
+    }
   }, [])
 
   return { categorySections, budgetProducts, bestsellers, newCollections, heroBanners, loading }

@@ -57,9 +57,9 @@ export default function Checkout({
   }
 
   return (
-    <main className="pt-32 pb-section px-6 md:px-12 max-w-container-max mx-auto">
-      <header className="mb-12">
-        <h1 className="font-headline-lg text-headline-lg text-on-background mb-2">Checkout</h1>
+    <main className="pt-6 sm:pt-8 pb-section px-6 md:px-12 max-w-container-max mx-auto">
+      <header className="mb-4 sm:mb-6">
+        <h1 className="font-headline-lg text-headline-lg text-on-background mb-1">Checkout</h1>
         <p className="font-body-md text-body-md text-secondary">
           Select your delivery destination for this order.
         </p>

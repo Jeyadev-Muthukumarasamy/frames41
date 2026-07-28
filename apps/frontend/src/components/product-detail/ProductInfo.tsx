@@ -1,6 +1,6 @@
 import type { ProductFeature } from '../../types/productDetail'
 import { formatINR } from '../../utils/format'
-import StarRating from '../review/StarRating'
+import StarRating from '../Review/StarRating'
 import Icon from '../ui/Icon'
 
 interface ProductInfoProps {

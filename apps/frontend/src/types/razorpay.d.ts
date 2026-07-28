@@ -17,5 +17,9 @@ interface RazorpayOptions {
 
 declare interface Window {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  Razorpay: new (options: RazorpayOptions) => { open(): void; close(): void }
+  Razorpay: new (options: RazorpayOptions) => {
+    open(): void
+    close(): void
+    on(event: string, callback: (response: any) => void): void
+  }
 }

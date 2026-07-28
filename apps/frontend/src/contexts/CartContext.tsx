@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useCallback, useEffect, useRef, useMemo } from 'react'
 import type { ReactNode } from 'react'
+import { toast } from 'sonner'
 import { api } from '@/lib/api'
 import { adaptCart } from '@/lib/adapters'
 import { useAuth } from './AuthContext'
@@ -57,17 +58,16 @@ async function uploadGuestCustomization(customization?: Record<string, unknown>)
   const qrCodeImageDataUrls = Array.isArray(next.qrCodeImageDataUrls) ? next.qrCodeImageDataUrls as string[] : []
 
   if (imageDataUrls.length) {
-    const imageUrls = await Promise.all(
-      imageDataUrls.map(async (dataUrl, index) => (await api.cart.uploadPhoto(dataUrlToFile(dataUrl, `custom-${index}.png`))).url),
-    )
-    next.imageUrls = imageUrls
-    customImageUrl = imageUrls[0]
+    const files = imageDataUrls.map((dataUrl, index) => dataUrlToFile(dataUrl, `custom-${index}.png`))
+    const { urls } = await api.cart.uploadPhotos(files)
+    next.imageUrls = urls
+    customImageUrl = urls[0]
   }
 
   if (qrCodeImageDataUrls.length) {
-    next.qrCodeImageUrls = await Promise.all(
-      qrCodeImageDataUrls.map(async (dataUrl, index) => (await api.cart.uploadPhoto(dataUrlToFile(dataUrl, `qr-${index}.png`))).url),
-    )
+    const files = qrCodeImageDataUrls.map((dataUrl, index) => dataUrlToFile(dataUrl, `qr-${index}.png`))
+    const { urls } = await api.cart.uploadPhotos(files)
+    next.qrCodeImageUrls = urls
   }
 
   delete next.imageDataUrls
@@ -102,21 +102,23 @@ function productToGuestItem(product: any, quantity: number, customization?: Reco
 }
 
 export function CartProvider({ children }: { children: ReactNode }) {
-  const { isAuthenticated } = useAuth()
-  const [itemCount, setItemCount] = useState(0)
+  const { isAuthenticated, isLoading: authLoading } = useAuth()
   const [cartData, setCartData] = useState<CartData | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const requestVersion = useRef(0)
 
+  const itemCount = useMemo(
+    () => cartData?.items.reduce((sum, item) => sum + item.quantity, 0) ?? 0,
+    [cartData],
+  )
+
   const setCart = useCallback((cart: unknown) => {
     const data = adaptCart(cart)
-    setItemCount(data.items.reduce((sum, item) => sum + item.quantity, 0))
     setCartData(data)
   }, [])
 
   const setGuestCart = useCallback((items: GuestCartItem[]) => {
     writeGuestCart(items)
-    setItemCount(items.reduce((sum, item) => sum + item.quantity, 0))
     setCartData(toCartData(items))
   }, [])
 
@@ -151,7 +153,6 @@ export function CartProvider({ children }: { children: ReactNode }) {
       if (version === requestVersion.current) setCart(cart)
     } catch {
       if (version === requestVersion.current) {
-        setItemCount(0)
         setCartData(null)
       }
     } finally {
@@ -159,29 +160,47 @@ export function CartProvider({ children }: { children: ReactNode }) {
     }
   }, [isAuthenticated, setCart, setGuestCart, syncGuestCart])
 
-  useEffect(() => { refresh() }, [refresh])
+  useEffect(() => {
+    if (authLoading) return
+    refresh()
+  }, [authLoading, refresh])
 
   const addItem = useCallback(async (productId: string, quantity: number, variantId?: string, customization?: Record<string, unknown>, customImageUrl?: string) => {
     if (!isAuthenticated) {
-      const product = await api.products.getById(productId)
-      const current = readGuestCart()
-      const existingIndex = current.findIndex((item) => item.productId === productId && !item.customization)
-      if (existingIndex >= 0 && !customization && !customImageUrl) {
-        current[existingIndex] = {
-          ...current[existingIndex],
-          quantity: current[existingIndex].quantity + quantity,
+      try {
+        const product = await api.products.getById(productId)
+        const current = readGuestCart()
+        const existingIndex = current.findIndex((item) => item.productId === productId && !item.customization)
+        if (existingIndex >= 0 && !customization && !customImageUrl) {
+          current[existingIndex] = {
+            ...current[existingIndex],
+            quantity: current[existingIndex].quantity + quantity,
+          }
+          setGuestCart(current)
+          toast.success('Added to cart')
+          return
         }
-        setGuestCart(current)
-        return
+        setGuestCart([...current, productToGuestItem(product, quantity, customization, customImageUrl)])
+        toast.success('Added to cart')
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : 'Failed to add item to cart'
+        toast.error(message)
+        throw err
       }
-      setGuestCart([...current, productToGuestItem(product, quantity, customization, customImageUrl)])
       return
     }
 
-    const cart = await api.cart.addItem({ productId, quantity, variantId, customization, customImageUrl })
-    ++requestVersion.current
-    setCart(cart)
-    setIsLoading(false)
+    try {
+      const cart = await api.cart.addItem({ productId, quantity, variantId, customization, customImageUrl })
+      ++requestVersion.current
+      setCart(cart)
+      setIsLoading(false)
+      toast.success('Added to cart')
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Failed to add item to cart'
+      toast.error(message)
+      throw err
+    }
   }, [isAuthenticated, setCart, setGuestCart])
 
   const updateItem = useCallback(async (cartItemId: string, quantity: number) => {
@@ -217,7 +236,6 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
     await api.cart.clearCart()
     ++requestVersion.current
-    setItemCount(0)
     setCartData({ items: [], charges: { shippingInr: 0, taxInr: 0, discountInr: 0 } })
     setIsLoading(false)
   }, [isAuthenticated, setGuestCart])

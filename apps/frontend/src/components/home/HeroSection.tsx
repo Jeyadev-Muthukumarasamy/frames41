@@ -2,6 +2,7 @@ import { useMemo, useState, useEffect, useCallback, useRef } from 'react'
 import type { HERO } from '../../constants/home'
 import type { Banner } from '../../types/home'
 import Icon from '../ui/Icon'
+import { getOptimizedImageUrl } from '@/utils/image'
 
 type HeroData = typeof HERO
 
@@ -14,19 +15,19 @@ interface HeroSectionProps {
 /* ─── Slide data ─── */
 const SLIDES = [
   {
-    img: 'https://images.unsplash.com/photo-1616486338812-3dadae4b4f9d?w=1600&q=85',
+    img: 'https://images.unsplash.com/photo-1513519245088-0e12902e5a38?w=1600&q=85',
     alt: 'Handcrafted wooden photo frame on shelf',
     headline: 'Handcrafted Soul\nfor Modern Spaces',
     sub: 'Artisanal wooden frames and DIY kits, carved with precision and finished with love.',
   },
   {
-    img: 'https://images.unsplash.com/photo-1558618666-fcd25c85f82e?w=1600&q=85',
+    img: 'https://images.unsplash.com/photo-1544816155-12df9643f363?w=1600&q=85',
     alt: 'Artisan workshop with wood shavings',
     headline: 'Made by Hand,\nMade for You',
     sub: 'Every piece tells a story. Personalised, premium, and built to last a lifetime.',
   },
   {
-    img: 'https://images.unsplash.com/photo-1595428774223-ef52624120d2?w=1600&q=85',
+    img: 'https://images.unsplash.com/photo-1582555172866-f73bb12a2ab3?w=1600&q=85',
     alt: 'Family photo in a beautiful wooden frame',
     headline: 'Preserve Memories\nin Solid Wood',
     sub: 'Premium teak frames that turn your moments into timeless heirlooms.',
@@ -148,12 +149,13 @@ export default function HeroSection({ data, banners = [] }: HeroSectionProps) {
         >
           <picture className="block h-full w-full">
             {'mobileImg' in s && s.mobileImg && (
-              <source media="(max-width: 639px)" srcSet={s.mobileImg} />
+              <source media="(max-width: 639px)" srcSet={getOptimizedImageUrl(s.mobileImg, { width: 640, quality: 80 })} />
             )}
             <img
-              src={s.img}
+              src={getOptimizedImageUrl(s.img, { width: 1400, quality: 80 })}
               alt={s.alt}
               loading={i === 0 ? 'eager' : 'lazy'}
+              decoding="async"
               className="h-full w-full object-contain"
             />
           </picture>

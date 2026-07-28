@@ -41,7 +41,13 @@ export default function AdminProductsPage() {
       render: (p: AdminProductListItem) => (
         <div className="flex items-center gap-3">
           {p.imageUrls?.[0] && (
-            <img src={p.imageUrls[0]} alt={p.name} className="w-9 h-9 rounded-lg object-cover bg-gray-100 flex-shrink-0" />
+            <img
+              src={p.imageUrls[0]}
+              alt={p.name}
+              loading="lazy"
+              decoding="async"
+              className="w-9 h-9 rounded-lg object-cover bg-gray-100 flex-shrink-0"
+            />
           )}
           <div>
             <p className="font-medium text-gray-800 max-w-xs truncate">{p.name}</p>

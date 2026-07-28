@@ -1,4 +1,4 @@
-import { lazy, Suspense } from 'react'
+import { lazy, Suspense, useState, useEffect } from 'react'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { Toaster } from 'sonner'
 import { AuthProvider } from '@/contexts/AuthContext'
@@ -29,6 +29,61 @@ const WishlistPage = lazy(() => import('@/pages/WishlistPage'))
 const ReviewPage = lazy(() => import('@/pages/ReviewPage'))
 const ReferPage = lazy(() => import('@/pages/ReferPage'))
 
+// ─── Offline detection banner ─────────────────────────────────────────────────
+function OfflineBanner() {
+  const [isOnline, setIsOnline] = useState(() => navigator.onLine)
+  const [showReconnected, setShowReconnected] = useState(false)
+
+  useEffect(() => {
+    const handleOnline = () => {
+      setIsOnline(true)
+      setShowReconnected(true)
+      // Hide the "back online" flash after 3 s
+      const t = setTimeout(() => setShowReconnected(false), 3000)
+      return () => clearTimeout(t)
+    }
+    const handleOffline = () => {
+      setIsOnline(false)
+      setShowReconnected(false)
+    }
+
+    window.addEventListener('online', handleOnline)
+    window.addEventListener('offline', handleOffline)
+    return () => {
+      window.removeEventListener('online', handleOnline)
+      window.removeEventListener('offline', handleOffline)
+    }
+  }, [])
+
+  if (isOnline && showReconnected) {
+    return (
+      <div
+        role="status"
+        aria-live="polite"
+        className="fixed top-0 left-0 right-0 z-[9999] flex items-center justify-center gap-2 bg-emerald-500 px-4 py-2 text-sm font-medium text-white shadow-md"
+      >
+        <span className="h-2 w-2 rounded-full bg-white" />
+        Back online — your changes will sync automatically.
+      </div>
+    )
+  }
+
+  if (!isOnline) {
+    return (
+      <div
+        role="alert"
+        aria-live="assertive"
+        className="fixed top-0 left-0 right-0 z-[9999] flex items-center justify-center gap-2 bg-gray-900 px-4 py-2 text-sm font-medium text-white shadow-md"
+      >
+        <span className="h-2 w-2 animate-pulse rounded-full bg-red-400" />
+        No internet connection — some features may be unavailable.
+      </div>
+    )
+  }
+
+  return null
+}
+
 function P({ children }: { children: React.ReactNode }) {
   return <ProtectedRoute>{children}</ProtectedRoute>
 }
@@ -38,6 +93,7 @@ export default function App() {
     <BrowserRouter>
       <AuthProvider>
         <CartProvider>
+          <OfflineBanner />
           <Toaster position="top-right" richColors />
           <Suspense fallback={<div className="min-h-screen bg-[#f8f7f2]" aria-busy="true" />}>
           <Routes>

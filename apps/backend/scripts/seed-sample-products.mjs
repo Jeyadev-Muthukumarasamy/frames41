@@ -60,7 +60,7 @@ async function main() {
         name: 'Wall Art',
         description: 'Decorative wall art pieces for every room',
         sortOrder: 5,
-        image: 'https://images.unsplash.com/photo-1513519245088-0e12902e35ca?w=800&q=80',
+        image: 'https://images.unsplash.com/photo-1513519245088-0e12902e5a38?w=800&q=80',
       },
     }),
   ]);
@@ -86,7 +86,7 @@ async function main() {
       weight: 0.5,
       dimensions: { width: 25, height: 30, depth: 2, unit: 'cm' },
       images: [
-        { url: 'https://images.unsplash.com/photo-1513519245088-0e12902e35ca?w=800&q=80', alt: 'Classic Wooden Photo Frame', isPrimary: true },
+        { url: 'https://images.unsplash.com/photo-1513519245088-0e12902e5a38?w=800&q=80', alt: 'Classic Wooden Photo Frame', isPrimary: true },
         { url: 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=800&q=80', alt: 'Frame detail view' },
       ],
       variants: [
@@ -135,7 +135,7 @@ async function main() {
       dimensions: { width: 50, height: 60, depth: 3, unit: 'cm' },
       images: [
         { url: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=80', alt: 'Family Collage Frame', isPrimary: true },
-        { url: 'https://images.unsplash.com/photo-1513519245088-0e12902e35ca?w=800&q=80', alt: 'Collage layout detail' },
+        { url: 'https://images.unsplash.com/photo-1513519245088-0e12902e5a38?w=800&q=80', alt: 'Collage layout detail' },
       ],
       variants: [
         { name: 'Black', priceModifier: 0, stock: 15, sku: 'CLG-006-001-BLK', attributes: { color: 'Black' } },
@@ -177,7 +177,7 @@ async function main() {
       weight: 0.6,
       dimensions: { width: 30, height: 30, depth: 0.5, unit: 'cm' },
       images: [
-        { url: 'https://images.unsplash.com/photo-1513519245088-0e12902e35ca?w=800&q=80', alt: 'Geometric Wall Art', isPrimary: true },
+        { url: 'https://images.unsplash.com/photo-1513519245088-0e12902e5a38?w=800&q=80', alt: 'Geometric Wall Art', isPrimary: true },
       ],
       variants: [
         { name: 'Set of 3', priceModifier: 0, stock: 40, sku: 'ART-GEO-001-3', attributes: { pieces: 3 } },
@@ -246,8 +246,8 @@ async function main() {
       update: {},
       create: {
         id: '00000000-0000-0000-0000-000000000001',
-        image: 'https://images.unsplash.com/photo-1513519245088-0e12902e35ca?w=1600&q=80',
-        mobileImage: 'https://images.unsplash.com/photo-1513519245088-0e12902e35ca?w=800&q=80',
+        image: 'https://images.unsplash.com/photo-1513519245088-0e12902e5a38?w=1600&q=80',
+        mobileImage: 'https://images.unsplash.com/photo-1513519245088-0e12902e5a38?w=800&q=80',
         title: 'Frame Your Memories',
         subtitle: 'Handcrafted photo frames starting from ₹499',
         link: '/shop',

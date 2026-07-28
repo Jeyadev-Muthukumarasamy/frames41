@@ -86,6 +86,25 @@ export function useProductListing() {
     return () => { cancelled = true }
   }, [filterKey])
 
+  // Restore scroll position on back-navigation
+  useEffect(() => {
+    const savedPos = sessionStorage.getItem('shop_scroll_pos')
+    if (savedPos && !loading && products.length > 0) {
+      window.scrollTo(0, parseInt(savedPos, 10))
+    }
+  }, [loading, products.length])
+
+  // Save scroll position on scroll
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 0) {
+        sessionStorage.setItem('shop_scroll_pos', String(window.scrollY))
+      }
+    }
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
+
   const loadMore = useCallback(async () => {
     if (!cursor || loadingMore) return
     setLoadingMore(true)

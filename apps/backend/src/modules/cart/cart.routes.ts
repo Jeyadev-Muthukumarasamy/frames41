@@ -32,6 +32,7 @@ export function createCartRoutes(): Router {
   // Cart operations
   router.get('/', controller.getCart);
   router.post('/upload-photo', ...uploadController.uploadCustomizationImage);
+  router.post('/upload-photos/batch', ...uploadController.uploadCustomizationImagesBatch);
   router.post('/items', controller.addToCart);
   router.patch('/items/:id', controller.updateCartItem);
   router.delete('/items/:id', controller.removeCartItem);

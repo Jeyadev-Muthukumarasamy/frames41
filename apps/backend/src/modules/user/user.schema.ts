@@ -27,10 +27,10 @@ export const updateProfileSchema = z.object({
  * Create address schema
  */
 export const createAddressSchema = z.object({
-  line1: z.string().min(5, 'Address line 1 is required').max(200),
+  line1: z.string().min(1, 'Address line 1 is required').max(200),
   line2: z.string().max(200).optional(),
-  city: z.string().min(2, 'City is required').max(100),
-  state: z.string().min(2, 'State is required').max(100),
+  city: z.string().min(1, 'City is required').max(100),
+  state: z.string().min(1, 'State is required').max(100),
   pincode: pincodeSchema,
   isDefault: z.boolean().default(false),
 });

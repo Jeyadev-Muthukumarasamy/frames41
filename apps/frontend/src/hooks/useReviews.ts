@@ -36,7 +36,21 @@ export function useReviews() {
     })
   }, [])
 
-  useEffect(() => { fetchReviews() }, [fetchReviews])
+  useEffect(() => {
+    let isMounted = true
+    api.reviews.getUserReviews().then((raw: any) => {
+      if (!isMounted) return
+      setReviews((raw ?? []).map(adaptReviewItem))
+    }).catch((err: unknown) => {
+      if (!isMounted) return
+      const message = err instanceof Error ? err.message : 'Failed to load your reviews.'
+      setError(message)
+      toast.error(message)
+    }).finally(() => {
+      if (isMounted) setLoading(false)
+    })
+    return () => { isMounted = false }
+  }, [])
 
   const submitReview = useCallback(async (data: ReviewFormData) => {
     try {

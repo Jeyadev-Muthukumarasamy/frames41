@@ -14,15 +14,10 @@ export function useProductDetailData(slug: string) {
     setError(null)
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    api.products.getBySlug(slug).then(async (raw: any) => {
+    api.products.getBySlug(slug).then((raw: any) => {
       const detail = adaptProductDetail(raw)
-
-      // Fetch review summary
-      const [summary, related] = await Promise.all([
-        api.reviews.getSummary(raw.id).catch(() => null),
-        api.products.getProducts({ categoryId: raw.categoryId, limit: 4 }).catch(() => null),
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      ]) as any[]
+      const summary = raw.reviewSummary
+      const related = raw.relatedProducts
 
       const withReviews: ProductData = {
         ...detail,
@@ -38,9 +33,9 @@ export function useProductDetailData(slug: string) {
               }),
             }
           : detail.reviews,
-        relatedProducts: related
-          ? (related?.products ?? related?.data ?? related ?? []).slice(0, 4).map(adaptRelatedProduct)
-          : [],
+        relatedProducts: related && Array.isArray(related)
+          ? related.slice(0, 4).map(adaptRelatedProduct)
+          : detail.relatedProducts,
       }
       setProduct(withReviews)
     }).catch((err: unknown) => {

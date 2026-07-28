@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { usePayment } from '@/hooks/usePayment'
 import Payment from '@/components/payment/Payment'
+import Icon from '@/components/ui/Icon'
 import { api } from '@/lib/api'
 import type { PaymentMethodId, PaymentOrderSummary, PaymentStatus } from '@/types/payment'
 
@@ -13,12 +14,62 @@ const STATUS_MAP: Record<string, PaymentStatus> = {
   error: 'error',
 }
 
+interface PaymentFailedModalProps {
+  reason: string
+  onRetry: () => void
+  onClose: () => void
+}
+
+function PaymentFailedModal({ reason, onRetry, onClose }: PaymentFailedModalProps) {
+  return (
+    <div
+      className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="payment-failed-title"
+    >
+      <div className="w-full max-w-md bg-white rounded-2xl p-6 sm:p-8 text-center shadow-2xl border border-outline-variant">
+        <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-red-100 text-red-600">
+          <Icon name="error" className="text-3xl" />
+        </div>
+
+        <h3 id="payment-failed-title" className="font-headline text-2xl text-on-background mb-2">
+          Payment Failed
+        </h3>
+
+        <p className="text-sm text-secondary mb-6 leading-relaxed">
+          {reason}
+        </p>
+
+        <div className="flex flex-col sm:flex-row gap-3">
+          <button
+            type="button"
+            onClick={onRetry}
+            className="flex-1 bg-primary text-white py-3 px-4 rounded-xl font-bold uppercase tracking-widest text-xs hover:brightness-110 transition-all"
+          >
+            Try Again
+          </button>
+
+          <button
+            type="button"
+            onClick={onClose}
+            className="flex-1 border border-outline-variant py-3 px-4 rounded-xl text-xs font-bold uppercase tracking-widest text-on-background hover:bg-surface transition-colors"
+          >
+            Change Method
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export default function PaymentPage() {
   const { orderId = '' } = useParams<{ orderId: string }>()
   const navigate = useNavigate()
-  const { status, startPayment, placeCashOnDelivery } = usePayment(orderId)
+  const { status, error, startPayment, placeCashOnDelivery } = usePayment(orderId)
   const [summary, setSummary] = useState<PaymentOrderSummary | null>(null)
   const [loadError, setLoadError] = useState<string | null>(null)
+  const [showFailedModal, setShowFailedModal] = useState(false)
 
   useEffect(() => {
     let active = true
@@ -44,8 +95,16 @@ export default function PaymentPage() {
             collection: snapshot.collection ?? snapshot.category?.name ?? 'Frames41',
             name: snapshot.name ?? 'Order item',
             qty: Number(item.quantity ?? 1),
-            imageUrl: snapshot.images?.[0]?.url ?? '',
-            imageAlt: snapshot.images?.[0]?.alt ?? snapshot.name ?? 'Order item',
+            imageUrl:
+              item.customImageUrl ||
+              item.customization?.customImageUrl ||
+              (Array.isArray(item.customization?.imageUrls) ? item.customization.imageUrls[0] : undefined) ||
+              snapshot.image ||
+              snapshot.imageUrl ||
+              snapshot.images?.[0]?.url ||
+              item.product?.images?.[0]?.url ||
+              '',
+            imageAlt: snapshot.imageAlt ?? snapshot.images?.[0]?.alt ?? snapshot.name ?? 'Order item',
           },
           lineItems: [
             { label: 'Subtotal', value: formatInr(subtotal) },
@@ -68,10 +127,16 @@ export default function PaymentPage() {
   }, [orderId])
 
   const handlePaymentSubmit = async (method: PaymentMethodId) => {
+    setShowFailedModal(false)
     const success = method === 'cod'
       ? await placeCashOnDelivery()
       : await startPayment()
-    if (success) navigate(`/order-confirm/${orderId}`, { replace: true })
+
+    if (success) {
+      navigate(`/order-confirm/${orderId}`, { replace: true })
+    } else {
+      setShowFailedModal(true)
+    }
   }
 
   if (loadError) {
@@ -94,10 +159,23 @@ export default function PaymentPage() {
   }
 
   return (
-    <Payment
-      summary={summary}
-      onPaymentSubmit={handlePaymentSubmit}
-      externalStatus={STATUS_MAP[status] ?? 'idle'}
-    />
+    <>
+      <Payment
+        summary={summary}
+        onPaymentSubmit={handlePaymentSubmit}
+        externalStatus={STATUS_MAP[status] ?? 'idle'}
+      />
+
+      {showFailedModal && (
+        <PaymentFailedModal
+          reason={error ?? 'The payment process was cancelled or could not be completed.'}
+          onRetry={() => {
+            setShowFailedModal(false)
+            handlePaymentSubmit('razorpay')
+          }}
+          onClose={() => setShowFailedModal(false)}
+        />
+      )}
+    </>
   )
 }

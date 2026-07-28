@@ -237,16 +237,16 @@ export default function ProductForm({ initial, categories, onSubmit, loading = f
   }
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
+    const files = Array.from(e.target.files ?? [])
+    if (files.length === 0) return
     setUploading(true)
     try {
-      const { url } = await api.admin.uploadImage(file)
-      set('imageUrls', [...form.imageUrls, url])
+      const { urls } = await api.admin.uploadImages(files)
+      set('imageUrls', [...form.imageUrls, ...urls])
       if (errors.images) {
         setErrors((prev) => { const n = { ...prev }; delete n.images; return n })
       }
-      addToast('Image uploaded successfully!', 'success')
+      addToast(`${urls.length} image${urls.length > 1 ? 's' : ''} uploaded successfully!`, 'success')
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Image upload failed'
       addToast(message, 'error')
@@ -450,6 +450,7 @@ export default function ProductForm({ initial, categories, onSubmit, loading = f
             <input
               ref={fileInputRef}
               type="file"
+              multiple
               accept="image/jpeg,image/png,image/webp,image/gif"
               onChange={handleFileChange}
               className="hidden"

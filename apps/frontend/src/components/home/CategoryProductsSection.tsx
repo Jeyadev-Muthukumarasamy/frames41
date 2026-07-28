@@ -2,6 +2,7 @@ import { useState } from 'react'
 import type { CategoryProductSection, Product } from '../../types/home'
 import { formatINR } from '../../utils/format'
 import Icon from '../ui/Icon'
+import OptimizedImage from '../ui/OptimizedImage'
 
 interface CategoryProductCardProps {
   product: Product
@@ -28,18 +29,12 @@ function CategoryProductCard({ product, onAddToCart }: CategoryProductCardProps)
     <article className="group min-w-0">
       <a href={`/shop/${product.slug}`} className="block">
         <div className="relative mb-3 aspect-square overflow-hidden rounded-xl bg-neutral-100">
-          {product.imageUrl ? (
-            <img
-              src={product.imageUrl}
-              alt={product.imageAlt}
-              loading="lazy"
-              className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-            />
-          ) : (
-            <div className="flex h-full items-center justify-center bg-neutral-200 px-4 text-center text-xs text-neutral-500">
-              {product.name}
-            </div>
-          )}
+          <OptimizedImage
+            src={product.imageUrl}
+            alt={product.imageAlt}
+            widthPreset="card"
+            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+          />
           {discount > 0 && (
             <span className="absolute bottom-3 left-3 rounded-full bg-amber-500 px-3 py-1 text-[10px] font-bold text-white">
               -{discount}% OFF

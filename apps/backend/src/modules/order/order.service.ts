@@ -137,26 +137,35 @@ export class OrderService implements IOrderService {
           couponId,
           couponCode: calculation.couponCode,
           items: {
-            create: cart.items.map((item) => ({
-              productId: item.productId,
-              productSnapshot: {
-                name: item.product.name,
-                slug: item.product.slug,
-                image: item.product.images[0]?.url,
-                sku: item.product.sku,
-              },
-              quantity: item.quantity,
-              unitPrice: item.unitPrice,
-              totalPrice: item.totalPrice,
-              customization: {
-                ...(item.customization &&
-                typeof item.customization === 'object' &&
-                !Array.isArray(item.customization)
-                  ? item.customization
-                  : {}),
-                ...(item.customImageUrl ? { customImageUrl: item.customImageUrl } : {}),
-              },
-            })),
+            create: cart.items.map((item) => {
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              const rawCust = item.customization as any;
+              const customImg: string | undefined =
+                item.customImageUrl ||
+                (rawCust?.customImageUrl ? String(rawCust.customImageUrl) : undefined) ||
+                (Array.isArray(rawCust?.imageUrls) && rawCust.imageUrls[0] ? String(rawCust.imageUrls[0]) : undefined);
+              return {
+                productId: item.productId,
+                customImageUrl: customImg,
+                productSnapshot: {
+                  name: item.product.name,
+                  slug: item.product.slug,
+                  image: customImg ?? item.product.images[0]?.url,
+                  sku: item.product.sku,
+                },
+                quantity: item.quantity,
+                unitPrice: item.unitPrice,
+                totalPrice: item.totalPrice,
+                customization: {
+                  ...(item.customization &&
+                  typeof item.customization === 'object' &&
+                  !Array.isArray(item.customization)
+                    ? item.customization
+                    : {}),
+                  ...(customImg ? { customImageUrl: customImg } : {}),
+                },
+              };
+            }),
           },
           statusHistory: { create: { status: 'PENDING', note: 'Order placed' } },
         },
