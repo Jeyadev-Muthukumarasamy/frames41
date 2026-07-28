@@ -6,6 +6,8 @@
     "apps/*"
   ],
   "scripts": {
+    "build": "npm run build -w apps/frontend",
+    "build:all": "npm run build -w apps/frontend && npm run build -w apps/backend && npm run build -w apps/admin",
     "install:all": "npm install",
     "dev": "concurrently \"npm run dev:frontend\" \"npm run dev:admin\"",
     "dev:full": "concurrently \"npm run dev:frontend\" \"npm run dev:admin\" \"npm run dev:backend\"",
