@@ -6,7 +6,7 @@
     "apps/*"
   ],
   "scripts": {
-    "postinstall": "npm run db:generate -w apps/backend",
+    "postinstall": "npx --no-install prisma generate --schema=apps/backend/prisma/schema.prisma 2>/dev/null || true",
     "build": "npm run build -w apps/frontend",
     "build:all": "npm run build -w apps/frontend && npm run build -w apps/backend && npm run build -w apps/admin",
     "install:all": "npm install",
