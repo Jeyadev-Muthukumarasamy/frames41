@@ -1,7 +1,7 @@
 import type { ChangeEvent, FormEvent } from 'react'
 
 const MAX_PROMO_LENGTH = 32
-const ALLOWED_PROMO_PATTERN = /[^A-Z0-9\-]/g
+const ALLOWED_PROMO_PATTERN = /[^A-Z0-9-]/g
 
 interface PromoCodeFormProps {
   value: string

@@ -310,7 +310,8 @@ function normalizeAdminOrder(order: AdminOrderApiShape): AdminOrderDetail {
 }
 
 function toProductPayload(data: Partial<ProductFormData>) {
-  const { imageUrls: _imageUrls, seoTitle, seoDescription, variants, priceTiers, ...rest } = data
+  const { seoTitle, seoDescription, variants, priceTiers, ...rest } = data
+  delete (rest as Record<string, unknown>).imageUrls
   return {
     ...rest,
     ...(seoTitle !== undefined ? { metaTitle: seoTitle } : {}),

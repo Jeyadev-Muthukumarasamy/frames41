@@ -3,7 +3,7 @@ import { api } from '../../lib/api'
 
 type SubmitStatus = 'idle' | 'loading' | 'success' | 'error'
 
-const EMAIL_REGEX = /^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$/
+const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/
 
 export default function NewsletterStrip() {
   const [email, setEmail] = useState('')
