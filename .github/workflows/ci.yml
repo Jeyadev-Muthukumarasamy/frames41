@@ -77,6 +77,8 @@ jobs:
       JWT_REFRESH_SECRET: ci-refresh-secret-key-at-least-32-characters
       JWT_ACCESS_EXPIRY: 15m
       JWT_REFRESH_EXPIRY: 30d
+      RAZORPAY_KEY_ID: rzp_test_12345678901234
+      RAZORPAY_KEY_SECRET: test_key_secret_12345
       RAZORPAY_WEBHOOK_SECRET: ci-razorpay-webhook-secret-key-test
 
     steps:
