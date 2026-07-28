@@ -188,7 +188,6 @@ jobs:
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
         run: |
-          echo "Smoke test failed — rolling back Railway to previous deployment"
-          npm install -g @railway/cli
-          railway rollback --service frames41-backend
-          echo "WARN Rollback initiated. Check Railway dashboard for status."
+          echo "Smoke test failed — initiating Railway redeploy"
+          npm install -g @railway/cli || true
+          railway redeploy --service frames41-backend || echo "WARN Check Railway dashboard for rollback status."
