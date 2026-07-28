@@ -81,71 +81,47 @@ jobs:
           echo "FAIL Backend did not become healthy within 120s"
           exit 1
 
-  # ─── Deploy Frontend to Vercel ───────────────────────────────────────────────
+  # ─── Deploy Frontend to Railway ──────────────────────────────────────────────
   deploy-frontend:
-    name: Deploy Frontend (Vercel)
+    name: Deploy Frontend (Railway)
     runs-on: ubuntu-latest
     needs: [pre-deploy-checks]
     environment:
       name: production
-      url: https://frames41.com
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: "npm"
+      - name: Install Railway CLI
+        run: npm install -g @railway/cli
 
-      - run: npm ci -w apps/frontend
-
-      - name: Build frontend
-        run: npm run build -w apps/frontend
+      - name: Deploy Frontend to Railway
         env:
-          VITE_API_URL: ${{ secrets.VITE_API_URL }}
-          VITE_RAZORPAY_KEY_ID: ${{ secrets.VITE_RAZORPAY_KEY_ID }}
-          VITE_CLOUDINARY_CLOUD_NAME: ${{ secrets.VITE_CLOUDINARY_CLOUD_NAME }}
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+        run: |
+          railway up \
+            --service frames41-frontend \
+            --detach
 
-      - name: Deploy to Vercel (Production)
-        uses: amondnet/vercel-action@v25
-        with:
-          vercel-token: ${{ secrets.VERCEL_TOKEN }}
-          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
-          vercel-project-id: ${{ secrets.VERCEL_FRONTEND_PROJECT_ID }}
-          working-directory: apps/frontend
-          vercel-args: "--prod"
-
-  # ─── Deploy Admin to Vercel ──────────────────────────────────────────────────
+  # ─── Deploy Admin to Railway ─────────────────────────────────────────────────
   deploy-admin:
-    name: Deploy Admin Dashboard (Vercel)
+    name: Deploy Admin Dashboard (Railway)
     runs-on: ubuntu-latest
     needs: [pre-deploy-checks]
     environment:
       name: production
-      url: https://admin.frames41.com
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: "npm"
+      - name: Install Railway CLI
+        run: npm install -g @railway/cli
 
-      - run: npm ci -w apps/admin
-
-      - name: Build admin
-        run: npm run build -w apps/admin
+      - name: Deploy Admin to Railway
         env:
-          VITE_API_URL: ${{ secrets.VITE_API_URL }}
-
-      - name: Deploy to Vercel (Production)
-        uses: amondnet/vercel-action@v25
-        with:
-          vercel-token: ${{ secrets.VERCEL_TOKEN }}
-          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
-          vercel-project-id: ${{ secrets.VERCEL_ADMIN_PROJECT_ID }}
-          working-directory: apps/admin
-          vercel-args: "--prod"
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+        run: |
+          railway up \
+            --service frames41-admin \
+            --detach
 
   # ─── Post-Deploy Smoke Test ──────────────────────────────────────────────────
   smoke-test:
