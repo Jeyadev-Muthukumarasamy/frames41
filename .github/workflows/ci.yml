@@ -46,7 +46,7 @@ jobs:
         run: npx tsc --noEmit -p apps/admin/tsconfig.json
 
       - name: Type-check backend
-        run: npx tsc --noEmit -p apps/backend/tsconfig.json
+        run: npx tsc --noEmit -p apps/backend/tsconfig.build.json
 
   # ─── 2. Backend Tests ────────────────────────────────────────────────────────
   test-backend:
@@ -74,6 +74,7 @@ jobs:
       JWT_REFRESH_SECRET: ci-refresh-secret-key-at-least-32-characters
       JWT_ACCESS_EXPIRY: 15m
       JWT_REFRESH_EXPIRY: 30d
+      RAZORPAY_WEBHOOK_SECRET: ci-razorpay-webhook-secret-key-test
 
     steps:
       - uses: actions/checkout@v4
