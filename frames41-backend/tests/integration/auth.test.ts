@@ -51,6 +51,28 @@ describe('Auth Integration Tests', () => {
     });
   });
 
+  describe('POST /api/v1/auth/phone', () => {
+    it('should authenticate user with phone and return tokens', async () => {
+      const response = await request(app)
+        .post('/api/v1/auth/phone')
+        .send({ phone: testPhone })
+        .expect(200);
+
+      expect(response.body.success).toBe(true);
+      expect(response.body.data.accessToken).toBeDefined();
+      expect(response.body.data.refreshToken).toBeDefined();
+    });
+
+    it('should reject invalid phone format', async () => {
+      const response = await request(app)
+        .post('/api/v1/auth/phone')
+        .send({ phone: '123' })
+        .expect(422);
+
+      expect(response.body.success).toBe(false);
+    });
+  });
+
   describe('POST /api/v1/auth/send-otp', () => {
     it('should send OTP to phone number', async () => {
       const response = await request(app)
@@ -61,38 +83,13 @@ describe('Auth Integration Tests', () => {
       expect(response.body.success).toBe(true);
       expect(response.body.data.message).toBe('OTP sent to your phone');
     });
-
-    it('should reject invalid phone format', async () => {
-      const response = await request(app)
-        .post('/api/v1/auth/send-otp')
-        .send({ phone: '123' })
-        .expect(422);
-
-      expect(response.body.success).toBe(false);
-    });
-  });
-
-  describe('POST /api/v1/auth/verify-otp', () => {
-    it('should verify OTP and return tokens', async () => {
-      await request(app)
-        .post('/api/v1/auth/send-otp')
-        .send({ phone: testPhone });
-
-      const response = await request(app)
-        .post('/api/v1/auth/verify-otp')
-        .send({ phone: testPhone, code: '123456' })
-        .expect(200);
-
-      expect(response.body.success).toBe(true);
-      expect(response.body.data.accessToken).toBeDefined();
-      expect(response.body.data.refreshToken).toBeDefined();
-    });
   });
 
   describe('POST /api/v1/auth/refresh', () => {
     it('should refresh access token with valid refresh token', async () => {
       const user = await prisma.user.create({
         data: {
+          email: 'customer@frames41.test',
           phone: testPhone,
           role: 'CUSTOMER',
         },
@@ -124,6 +121,7 @@ describe('Auth Integration Tests', () => {
     it('should logout successfully', async () => {
       const user = await prisma.user.create({
         data: {
+          email: 'customer@frames41.test',
           phone: testPhone,
           role: 'CUSTOMER',
         },
