@@ -91,7 +91,7 @@ describe('Auth Integration Tests', () => {
         data: {
           email: 'customer@frames41.test',
           phone: testPhone,
-          role: 'CUSTOMER',
+          role: 'USER',
         },
       });
 
@@ -123,7 +123,7 @@ describe('Auth Integration Tests', () => {
         data: {
           email: 'customer@frames41.test',
           phone: testPhone,
-          role: 'CUSTOMER',
+          role: 'USER',
         },
       });
 
