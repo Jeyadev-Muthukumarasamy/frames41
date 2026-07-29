@@ -11,9 +11,12 @@ COPY frames41-backend/package*.json ./frames41-backend/
 COPY frames41-frontend ./frames41-frontend
 COPY frames41-backend ./frames41-backend
 
+RUN cd frames41-frontend && npm install
+RUN cd frames41-backend && npm install
+
 WORKDIR /app/frames41-backend
-RUN npx prisma generate --schema=prisma/schema.prisma
-RUN npm run build
+RUN ./node_modules/.bin/prisma generate --schema=prisma/schema.prisma
+RUN npm run build:backend
 
 FROM node:20-alpine AS runner
 

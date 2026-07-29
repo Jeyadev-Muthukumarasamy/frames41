@@ -4,19 +4,19 @@ RUN apk add --no-cache openssl libc6-compat
 
 WORKDIR /app
 
-# Copy root & monorepo package manifests
 COPY package*.json ./
 COPY frames41-frontend/package*.json ./frames41-frontend/
 COPY frames41-backend/package*.json ./frames41-backend/
 
-# Copy source files
 COPY frames41-frontend ./frames41-frontend
 COPY frames41-backend ./frames41-backend
 
-# Build customer frontend into backend public folder & compile backend
+RUN cd frames41-frontend && npm install
+RUN cd frames41-backend && npm install
+
 WORKDIR /app/frames41-backend
-RUN npx prisma generate --schema=prisma/schema.prisma
-RUN npm run build
+RUN ./node_modules/.bin/prisma generate --schema=prisma/schema.prisma
+RUN npm run build:backend
 
 FROM node:20-alpine AS runner
 
