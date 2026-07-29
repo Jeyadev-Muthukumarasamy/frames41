@@ -52,14 +52,29 @@ export function useHomePage() {
         if (cancelled) return
 
         const rawCategories = (Array.isArray(home.categories) ? home.categories : []) as any[]
+        const bestList = asProductList(home.bestsellers)
+        const newList = asProductList(home.newCollections)
+        const budgetList = asProductList(home.budgetProducts)
+        const allRawProducts = [...bestList, ...newList, ...budgetList]
+
         const sections = rawCategories
-          .map(adaptCategoryProductSection)
+          .map((cat: any) => {
+            const explicit = Array.isArray(cat.products) ? cat.products : []
+            const matched = allRawProducts.filter((p: any) => p.categoryId === cat.id)
+            const items = explicit.length > 0 ? explicit : (matched.length > 0 ? matched : allRawProducts.slice(0, 4))
+            return {
+              id: cat.id,
+              slug: cat.slug ?? cat.id,
+              title: cat.name,
+              products: items.map(adaptProduct),
+            }
+          })
           .filter((section: CategoryProductSection) => section.products.length > 0)
 
         setCategorySections(sections)
-        setBudgetProducts(asProductList(home.budgetProducts).map(adaptProduct))
-        setBestsellers(asProductList(home.bestsellers).map(adaptProduct))
-        setNewCollections(asProductList(home.newCollections).map(adaptProduct).slice(0, 8))
+        setBudgetProducts(budgetList.map(adaptProduct))
+        setBestsellers(bestList.map(adaptProduct))
+        setNewCollections(newList.map(adaptProduct).slice(0, 8))
 
         const homeBanners = home.heroBanners ?? (home.heroBanner ? [home.heroBanner] : [])
         setHeroBanners(
