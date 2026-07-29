@@ -30,11 +30,8 @@ export default defineConfig({
     },
     testTimeout: 30000,
     hookTimeout: 30000,
-    poolOptions: {
-      threads: {
-        singleThread: true,
-      },
-    },
+    fileParallelism: false,
+    maxConcurrency: 1,
   },
   resolve: {
     alias: {
