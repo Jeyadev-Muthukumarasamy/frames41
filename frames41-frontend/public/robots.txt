@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /checkout
+Disallow: /cart
+Disallow: /profile
+Disallow: /payment
+
+Sitemap: https://frames41.com/sitemap.xml

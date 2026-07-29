@@ -1,0 +1,122 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    margin: 0;
+    background-color: theme('colors.background');
+    color: theme('colors.on-background');
+    font-family: theme('fontFamily.body');
+  }
+
+  .material-symbols-outlined {
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    user-select: none;
+  }
+}
+
+@layer utilities {
+  .announcement-marquee {
+    animation: announcement-marquee 16s linear infinite;
+    will-change: transform;
+  }
+
+  @keyframes announcement-marquee {
+    to {
+      transform: translateX(-50%);
+    }
+  }
+
+  .shimmer {
+    position: relative;
+  }
+
+  .shimmer::after {
+    position: absolute;
+    inset: 0;
+    content: '';
+    transform: translateX(-100%);
+    background-image: linear-gradient(
+      90deg,
+      transparent,
+      rgb(255 255 255 / 55%),
+      transparent
+    );
+    animation: shimmer 1.5s infinite;
+  }
+
+  .shimmer-dark {
+    background-color: rgb(255 255 255 / 12%);
+  }
+
+  .shimmer-dark::after {
+    background-image: linear-gradient(
+      90deg,
+      transparent,
+      rgb(255 255 255 / 12%),
+      transparent
+    );
+  }
+
+  @keyframes shimmer {
+    100% {
+      transform: translateX(100%);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .announcement-marquee {
+      animation-play-state: paused;
+    }
+
+    .shimmer::after {
+      animation: none;
+    }
+  }
+
+  .high-contrast-shadow {
+    box-shadow: 0 4px 0 0 #111110;
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
+
+/* ─── Razorpay Checkout Popup Responsive Sizing ───────────────────────────── */
+iframe.razorpay-checkout-frame,
+iframe[name="rzp_checkout_frame"],
+.razorpay-container,
+div[style*="2147483647"] iframe {
+  width: 1140px !important;
+  height: 720px !important;
+  max-width: 98vw !important;
+  max-height: 95vh !important;
+  margin: auto !important;
+  top: 0 !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  transform: none !important;
+}
+
+
+
