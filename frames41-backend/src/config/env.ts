@@ -18,7 +18,7 @@ const envSchema = z.object({
   PORT: z
     .string()
     .transform((val) => parseInt(val, 10))
-    .default('3000'),
+    .default('5001'),
   API_VERSION: z.string().default('v1'),
   APP_NAME: z.string().default('Frames41 API'),
   APP_URL: z.string().url().default('https://frames41-production.up.railway.app'),
@@ -44,7 +44,7 @@ const envSchema = z.object({
     .default('100'),
 
   // CORS
-  CORS_ORIGIN: z.string().default('http://localhost:5173,https://frames41-production.up.railway.app'),
+  CORS_ORIGIN: z.string().default('http://localhost:3000,http://localhost:5173,http://localhost:5174,https://frames41-production.up.railway.app'),
 
   // Logging
   LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace']).default('info'),
