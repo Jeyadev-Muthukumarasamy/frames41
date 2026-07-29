@@ -2,6 +2,8 @@ import { LRUCache } from 'lru-cache';
 import { LRU_CACHE_CONFIG } from '../../config/constants.js';
 import { logger } from '../logger/pino.logger.js';
 
+const activeCaches: LRUCache<any, any>[] = [];
+
 /**
  * LRU Cache factory for different use cases
  * Using in-memory cache instead of Redis for cost constraints
@@ -17,6 +19,8 @@ export function createLRUCache<K extends {}, V extends {}>(
     allowStale: false,
     ...options,
   });
+
+  activeCaches.push(cache);
 
   logger.debug({
     max: cache.max,
@@ -69,9 +73,9 @@ export function getCacheStats<K extends {}, V extends {}>(cache: LRUCache<K, V>)
  * Clear all caches (useful for testing or admin operations)
  */
 export function clearAllCaches(): void {
-  rateLimitCache.clear();
-  verificationRateLimitCache.clear();
-  userSessionCache.clear();
+  for (const cache of activeCaches) {
+    cache.clear();
+  }
   
   logger.info('All caches cleared');
 }
