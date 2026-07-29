@@ -90,9 +90,14 @@ instance.interceptors.request.use(async (config: InternalAxiosRequestConfig) => 
       if (refreshToken) {
         try {
           const res = await plainAxios.post('/auth/refresh', { refreshToken })
-          const { accessToken, refreshToken: newRefresh, expiresIn } = res.data.data
-          setTokens(accessToken, newRefresh, expiresIn)
-          config.headers['Authorization'] = `Bearer ${accessToken}`
+          const payload = res.data?.data ?? res.data
+          const accessToken = payload?.accessToken ?? payload?.tokens?.accessToken
+          const newRefresh = payload?.refreshToken ?? payload?.tokens?.refreshToken ?? refreshToken
+          const expiresIn = payload?.expiresIn ?? payload?.tokens?.expiresIn
+          if (accessToken) {
+            setTokens(accessToken, newRefresh, expiresIn)
+            config.headers['Authorization'] = `Bearer ${accessToken}`
+          }
           return config
         } catch {
           clearTokens()
@@ -152,7 +157,13 @@ instance.interceptors.response.use(
 
     try {
       const res = await plainAxios.post('/auth/refresh', { refreshToken })
-      const { accessToken, refreshToken: newRefresh, expiresIn } = res.data.data
+      const payload = res.data?.data ?? res.data
+      const accessToken = payload?.accessToken ?? payload?.tokens?.accessToken
+      const newRefresh = payload?.refreshToken ?? payload?.tokens?.refreshToken ?? refreshToken
+      const expiresIn = payload?.expiresIn ?? payload?.tokens?.expiresIn
+      if (!accessToken) {
+        throw new Error('No access token returned from refresh endpoint')
+      }
       setTokens(accessToken, newRefresh, expiresIn)
       instance.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`
       drainQueue(accessToken)
