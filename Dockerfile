@@ -4,19 +4,33 @@ RUN apk add --no-cache openssl libc6-compat
 
 WORKDIR /app
 
+# Copy root package files
 COPY package*.json ./
-COPY frames41-frontend/package*.json ./frames41-frontend/
-COPY frames41-backend/package*.json ./frames41-backend/
 
-COPY frames41-frontend ./frames41-frontend
-COPY frames41-backend ./frames41-backend
+# Copy all app packages
+COPY apps/backend/package*.json ./apps/backend/
+COPY apps/frontend/package*.json ./apps/frontend/
+COPY apps/admin/package*.json ./apps/admin/
 
-RUN cd frames41-frontend && npm install
-RUN cd frames41-backend && npm install
+# Copy source code
+COPY apps/backend ./apps/backend
+COPY apps/frontend ./apps/frontend
+COPY apps/admin ./apps/admin
 
-WORKDIR /app/frames41-backend
-RUN ./node_modules/.bin/prisma generate --schema=prisma/schema.prisma
+# Install dependencies
+RUN npm ci
+
+# Build frontend first so public/ has the built assets
+WORKDIR /app/apps/frontend
+RUN npm run build
+
+# Generate prisma client and build backend
+WORKDIR /app/apps/backend
+RUN npx prisma generate --schema=prisma/schema.prisma
 RUN npm run build:backend
+
+# Copy frontend build to backend public directory
+RUN cp -r /app/apps/frontend/dist/* ./public/
 
 FROM node:20-alpine AS runner
 
@@ -26,12 +40,13 @@ WORKDIR /app
 
 ENV NODE_ENV=production
 
-COPY --from=builder /app/frames41-backend/package*.json ./
-COPY --from=builder /app/frames41-backend/node_modules ./node_modules
-COPY --from=builder /app/frames41-backend/dist ./dist
-COPY --from=builder /app/frames41-backend/public ./public
-COPY --from=builder /app/frames41-backend/prisma ./prisma
+# Copy backend files from builder
+COPY --from=builder /app/apps/backend/package*.json ./
+COPY --from=builder /app/apps/backend/node_modules ./node_modules
+COPY --from=builder /app/apps/backend/dist ./dist
+COPY --from=builder /app/apps/backend/public ./public
+COPY --from=builder /app/apps/backend/prisma ./prisma
 
-EXPOSE 5000
+EXPOSE 3000
 
-CMD ["npm", "run", "start:prod"]
+CMD ["npm", "run", "start"]
