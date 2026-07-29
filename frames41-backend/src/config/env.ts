@@ -70,13 +70,10 @@ const envSchema = z.object({
     .default('false')
     .transform((val) => val === 'true'),
 
-  // Razorpay — all three keys required together when payments are enabled
-  RAZORPAY_KEY_ID: z.string().optional(),
-  RAZORPAY_KEY_SECRET: z.string().optional(),
-  // SECURITY: This MUST be set whenever RAZORPAY_KEY_ID is set.
-  // Without it, Razorpay webhook signature verification is skipped,
-  // allowing forged payment events to mark orders as paid.
-  RAZORPAY_WEBHOOK_SECRET: z.string().min(1, 'RAZORPAY_WEBHOOK_SECRET is required when Razorpay is enabled').optional(),
+  // Razorpay (Optional in development)
+  RAZORPAY_KEY_ID: emptyStringToUndefined(z.string()),
+  RAZORPAY_KEY_SECRET: emptyStringToUndefined(z.string()),
+  RAZORPAY_WEBHOOK_SECRET: emptyStringToUndefined(z.string()),
 
   // Shiprocket (Optional for Phase 1)
   SHIPROCKET_EMAIL: emptyStringToUndefined(z.string().email()),
