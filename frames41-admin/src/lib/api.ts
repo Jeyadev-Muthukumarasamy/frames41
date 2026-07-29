@@ -33,10 +33,12 @@ import type {
   CouponFormData,
 } from '@/types/admin'
 
-const plainAxios = axios.create({ baseURL: '/api/v1' })
+const API_BASE = import.meta.env.VITE_API_URL || '/api/v1'
+
+const plainAxios = axios.create({ baseURL: API_BASE })
 
 const instance: AxiosInstance = axios.create({
-  baseURL: '/api/v1',
+  baseURL: API_BASE,
   headers: { 'Content-Type': 'application/json' },
 })
 
