@@ -141,22 +141,39 @@ jobs:
     steps:
       - name: Check API health
         run: |
-          STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
-            https://frames41-production.up.railway.app/api/v1/health)
+          echo "Waiting for API health check..."
+          for i in $(seq 1 12); do
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+              https://frames41-production.up.railway.app/api/v1/health || echo "000")
+            if [ "$STATUS" = "200" ]; then
+              echo "PASS API health: HTTP $STATUS (attempt $i)"
+              break
+            fi
+            echo "Attempt $i: status=$STATUS, retrying in 10s..."
+            sleep 10
+          done
           if [ "$STATUS" != "200" ]; then
             echo "FAIL API health check failed: HTTP $STATUS"
             exit 1
           fi
-          echo "PASS API health: HTTP $STATUS"
 
       - name: Check frontend homepage
         run: |
-          STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://frames41.com)
+          echo "Waiting for frontend homepage check..."
+          for i in $(seq 1 12); do
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+              https://frames41-production.up.railway.app/ || echo "000")
+            if [ "$STATUS" = "200" ]; then
+              echo "PASS Frontend: HTTP $STATUS (attempt $i)"
+              break
+            fi
+            echo "Attempt $i: status=$STATUS, retrying in 10s..."
+            sleep 10
+          done
           if [ "$STATUS" != "200" ]; then
             echo "FAIL Frontend not reachable: HTTP $STATUS"
             exit 1
           fi
-          echo "PASS Frontend: HTTP $STATUS"
 
       - name: Notify on success
         if: success()

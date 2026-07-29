@@ -107,7 +107,7 @@ export function createApp(): express.Application {
   // Audit logging for mutations
   app.use(auditMiddleware);
 
-  // Health check endpoint
+  // Health check endpoints
   app.get('/health', async (_req, res) => {
     res.status(200).json({
       status: 'healthy',
@@ -118,6 +118,14 @@ export function createApp(): express.Application {
 
   // API routes
   const apiPrefix = `/api/${env.API_VERSION}`;
+
+  app.get(`${apiPrefix}/health`, async (_req, res) => {
+    res.status(200).json({
+      status: 'healthy',
+      timestamp: new Date().toISOString(),
+      version: process.env.npm_package_version || '1.0.0',
+    });
+  });
 
   app.use(apiPrefix, (req, res, next) => {
     const publicReadPrefixes = [
