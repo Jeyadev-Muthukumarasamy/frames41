@@ -46,7 +46,7 @@ jobs:
         run: npx tsc --noEmit -p apps/admin/tsconfig.json
 
       - name: Generate Prisma client
-        run: npx prisma generate --schema=apps/backend/prisma/schema.prisma
+        run: npx prisma@5.22.0 generate --schema=apps/backend/prisma/schema.prisma
 
       - name: Type-check backend
         run: npx tsc --noEmit -p apps/backend/tsconfig.build.json
@@ -94,10 +94,10 @@ jobs:
         run: npm ci --workspaces
 
       - name: Generate Prisma client
-        run: npx prisma generate --schema=apps/backend/prisma/schema.prisma
+        run: npx prisma@5.22.0 generate --schema=apps/backend/prisma/schema.prisma
 
       - name: Run DB migrations
-        run: npx prisma migrate deploy
+        run: npx prisma@5.22.0 migrate deploy
         working-directory: apps/backend
 
       - name: Run unit tests
