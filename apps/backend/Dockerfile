@@ -5,12 +5,13 @@ RUN apk add --no-cache openssl libc6-compat
 WORKDIR /app
 
 COPY package*.json ./
-COPY prisma ./prisma/
+COPY frames41-frontend/package*.json ./frames41-frontend/
+COPY frames41-backend/package*.json ./frames41-backend/
 
-RUN npm install
+COPY frames41-frontend ./frames41-frontend
+COPY frames41-backend ./frames41-backend
 
-COPY . .
-
+WORKDIR /app/frames41-backend
 RUN npx prisma generate --schema=prisma/schema.prisma
 RUN npm run build
 
@@ -22,10 +23,11 @@ WORKDIR /app
 
 ENV NODE_ENV=production
 
-COPY --from=builder /app/package*.json ./
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/prisma ./prisma
+COPY --from=builder /app/frames41-backend/package*.json ./
+COPY --from=builder /app/frames41-backend/node_modules ./node_modules
+COPY --from=builder /app/frames41-backend/dist ./dist
+COPY --from=builder /app/frames41-backend/public ./public
+COPY --from=builder /app/frames41-backend/prisma ./prisma
 
 EXPOSE 5000
 
