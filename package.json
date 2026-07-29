@@ -10,7 +10,7 @@
     "build": "npm run build -w apps/frontend",
     "build:all": "npm run build -w apps/frontend && npm run build -w apps/backend && npm run build -w apps/admin",
     "install:all": "npm install",
-    "dev": "concurrently \"npm run dev:frontend\" \"npm run dev:admin\"",
+    "dev": "concurrently -n \"backend,frontend,admin\" -c \"cyan,blue,magenta\" \"npm run dev:backend\" \"npm run dev:frontend\" \"npm run dev:admin\"",
     "dev:full": "concurrently \"npm run dev:frontend\" \"npm run dev:admin\" \"npm run dev:backend\"",
     "dev:frontend": "npm run dev -w apps/frontend",
     "dev:admin": "npm run dev -w apps/admin",
