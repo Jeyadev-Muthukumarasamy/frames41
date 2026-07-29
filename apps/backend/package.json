@@ -9,9 +9,10 @@
   },
   "scripts": {
     "postinstall": "prisma generate --schema=prisma/schema.prisma 2>/dev/null || true",
-    "build": "tsc -p tsconfig.build.json",
+    "build:backend": "tsc -p tsconfig.build.json",
+    "build": "cd ../frontend && npm install && npm run build && cd ../backend && npm run build:backend",
     "start": "node dist/src/server.js",
-    "start:prod": "npx prisma migrate deploy && node dist/src/server.js",
+    "start:prod": "npm run build && npx prisma migrate deploy && node dist/src/server.js",
     "start:worker": "node dist/src/worker.js",
     "dev": "tsx watch src/server.ts",
     "dev:worker": "tsx watch src/worker.ts",

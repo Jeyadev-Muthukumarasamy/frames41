@@ -1,0 +1,1 @@
+var e=new Intl.NumberFormat(`en-IN`,{style:`currency`,currency:`INR`,maximumFractionDigits:0}),t=t=>e.format(t);export{t};

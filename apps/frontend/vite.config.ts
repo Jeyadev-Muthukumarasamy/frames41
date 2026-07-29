@@ -19,5 +19,9 @@ export default defineConfig(({ mode }) => {
         "/webhooks": { target: apiTarget, changeOrigin: true, secure: true },
       },
     },
+    build: {
+      outDir: "../backend/public",
+      emptyOutDir: true,
+    },
   };
 });
