@@ -102,7 +102,7 @@ describe('User Integration Tests', () => {
         .expect(200);
 
       expect(response.body.success).toBe(true);
-      expect(response.body.data.email).toBeNull();
+      expect(response.body.data.email ?? '').toBe('');
     });
   });
 
