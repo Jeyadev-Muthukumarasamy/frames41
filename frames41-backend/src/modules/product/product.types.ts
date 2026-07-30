@@ -125,7 +125,7 @@ export interface CreateProductData {
   shortDescription?: string;
   basePrice: number;
   discountedPrice?: number;
-  sku: string;
+  sku?: string;
   stock: number;
   isActive: boolean;
   isBestSeller: boolean;

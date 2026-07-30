@@ -29,22 +29,11 @@ export class ProductRepository implements IProductRepository {
   private get includeRelations() {
     return {
       images: {
-        orderBy: { sortOrder: 'asc' },
+        orderBy: { sortOrder: 'asc' as const },
       },
-      variants: {
-        where: { isActive: true },
-        orderBy: { createdAt: 'asc' },
-      },
-      priceTiers: {
-        orderBy: { minQty: 'asc' },
-      },
-      category: {
-        select: {
-          id: true,
-          name: true,
-          slug: true,
-        },
-      },
+      variants: true,
+      priceTiers: true,
+      category: true,
     } as const;
   }
 
@@ -54,13 +43,7 @@ export class ProductRepository implements IProductRepository {
         take: 1,
         orderBy: { sortOrder: 'asc' as const },
       },
-      category: {
-        select: {
-          id: true,
-          name: true,
-          slug: true,
-        },
-      },
+      category: true,
     } as const;
   }
 
@@ -158,7 +141,7 @@ export class ProductRepository implements IProductRepository {
     const nextCursor = hasMore && data.length > 0 ? data[data.length - 1].id : null;
 
     const result = {
-      data: data as ProductWithRelations[],
+      data: data as unknown as ProductWithRelations[],
       nextCursor,
       hasMore,
     };
@@ -166,25 +149,17 @@ export class ProductRepository implements IProductRepository {
     return result;
   }
 
-  private async enrichItemContext(product: ProductWithRelations | null): Promise<ProductWithRelations | null> {
-    if (!product) return null;
-
-    const [reviewAggregate, ratingBreakdown, relatedProducts] = await Promise.all([
+  private async getReviewSummary(productId: string) {
+    const [reviewAggregate, ratingBreakdown] = await Promise.all([
       this.prisma.review.aggregate({
-        where: { productId: product.id, isApproved: true },
+        where: { productId, isApproved: true },
         _avg: { rating: true },
         _count: { _all: true },
       }),
       this.prisma.review.groupBy({
         by: ['rating'],
-        where: { productId: product.id, isApproved: true },
+        where: { productId, isApproved: true },
         _count: { _all: true },
-      }),
-      this.prisma.product.findMany({
-        where: { categoryId: product.categoryId, id: { not: product.id }, isActive: true },
-        take: 4,
-        orderBy: [{ isFeatured: 'desc' }, { createdAt: 'desc' }],
-        include: this.listRelations,
       }),
     ]);
 
@@ -194,12 +169,36 @@ export class ProductRepository implements IProductRepository {
     });
 
     return {
-      ...product,
-      reviewSummary: {
-        totalReviews: reviewAggregate._count._all || 0,
-        averageRating: reviewAggregate._avg.rating || 0,
-        ratingDistribution: distMap,
+      totalReviews: reviewAggregate._count._all || 0,
+      averageRating: reviewAggregate._avg.rating || 0,
+      ratingDistribution: distMap,
+    };
+  }
+
+  private async getRelatedProducts(categoryId: string, productId: string) {
+    return this.prisma.product.findMany({
+      where: {
+        categoryId,
+        id: { not: productId },
+        isActive: true,
       },
+      take: 4,
+      orderBy: [{ isFeatured: 'desc' }, { createdAt: 'desc' }],
+      include: this.listRelations,
+    });
+  }
+
+  private async enrichItemContext(product: ProductWithRelations | null): Promise<ProductWithRelations | null> {
+    if (!product) return null;
+
+    const [reviewSummary, relatedProducts] = await Promise.all([
+      this.getReviewSummary(product.id),
+      this.getRelatedProducts(product.categoryId, product.id),
+    ]);
+
+    return {
+      ...product,
+      reviewSummary,
       relatedProducts,
     } as unknown as ProductWithRelations;
   }
@@ -224,8 +223,19 @@ export class ProductRepository implements IProductRepository {
     const raw = await this.prisma.product.findUnique({
       where: { slug },
       include: this.includeRelations,
-    }) as ProductWithRelations | null;
-    const product = await this.enrichItemContext(raw);
+    });
+    if (!raw) return null;
+
+    const [reviewSummary, relatedProducts] = await Promise.all([
+      this.getReviewSummary(raw.id),
+      this.getRelatedProducts(raw.categoryId, raw.id),
+    ]);
+
+    const product = {
+      ...raw,
+      reviewSummary,
+      relatedProducts,
+    } as unknown as ProductWithRelations;
     if (product) productCatalogCache.set(cacheKey, product);
     return product;
   }
@@ -272,7 +282,7 @@ export class ProductRepository implements IProductRepository {
     const nextCursor = hasMore && data.length > 0 ? data[data.length - 1].id : null;
 
     const result = {
-      data: data as ProductWithRelations[],
+      data: data as unknown as ProductWithRelations[],
       nextCursor,
       hasMore,
     };
@@ -306,7 +316,7 @@ export class ProductRepository implements IProductRepository {
     const nextCursor = hasMore && data.length > 0 ? data[data.length - 1].id : null;
 
     const result = {
-      data: data as ProductWithRelations[],
+      data: data as unknown as ProductWithRelations[],
       nextCursor,
       hasMore,
     };
@@ -443,12 +453,6 @@ export class ProductRepository implements IProductRepository {
       where: {
         sku: { in: skus, mode: 'insensitive' },
         ...(excludeProductId ? { productId: { not: excludeProductId } } : {}),
-      },
-      select: { sku: true },
-    });
-    return existing.map((v) => v.sku);
-  }
-}
       },
       select: { sku: true },
     });

@@ -29,15 +29,11 @@ export class ProductRepository implements IProductRepository {
   private get includeRelations() {
     return {
       images: {
-        orderBy: { sortOrder: 'asc' },
+        orderBy: { sortOrder: 'asc' as const },
       },
-      category: {
-        select: {
-          id: true,
-          name: true,
-          slug: true,
-        },
-      },
+      variants: true,
+      priceTiers: true,
+      category: true,
     } as const;
   }
 
@@ -47,13 +43,7 @@ export class ProductRepository implements IProductRepository {
         take: 1,
         orderBy: { sortOrder: 'asc' as const },
       },
-      category: {
-        select: {
-          id: true,
-          name: true,
-          slug: true,
-        },
-      },
+      category: true,
     } as const;
   }
 
@@ -151,7 +141,7 @@ export class ProductRepository implements IProductRepository {
     const nextCursor = hasMore && data.length > 0 ? data[data.length - 1].id : null;
 
     const result = {
-      data: data as ProductWithRelations[],
+      data: data as unknown as ProductWithRelations[],
       nextCursor,
       hasMore,
     };
@@ -245,7 +235,7 @@ export class ProductRepository implements IProductRepository {
       ...raw,
       reviewSummary,
       relatedProducts,
-    } as ProductWithRelations;
+    } as unknown as ProductWithRelations;
     if (product) productCatalogCache.set(cacheKey, product);
     return product;
   }
@@ -292,7 +282,7 @@ export class ProductRepository implements IProductRepository {
     const nextCursor = hasMore && data.length > 0 ? data[data.length - 1].id : null;
 
     const result = {
-      data: data as ProductWithRelations[],
+      data: data as unknown as ProductWithRelations[],
       nextCursor,
       hasMore,
     };
@@ -326,7 +316,7 @@ export class ProductRepository implements IProductRepository {
     const nextCursor = hasMore && data.length > 0 ? data[data.length - 1].id : null;
 
     const result = {
-      data: data as ProductWithRelations[],
+      data: data as unknown as ProductWithRelations[],
       nextCursor,
       hasMore,
     };
