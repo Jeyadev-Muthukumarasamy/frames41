@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { api } from '@/lib/api'
-import { adaptProduct, adaptCategoryProductSection } from '@/lib/adapters'
+import { adaptProduct } from '@/lib/adapters'
 import type { Product, CategoryProductSection, Banner } from '@/types/home'
 
 type BannerResponse = Partial<Banner> & {
@@ -61,7 +61,7 @@ export function useHomePage() {
           .map((cat: any) => {
             const explicit = Array.isArray(cat.products) ? cat.products : []
             const matched = allRawProducts.filter((p: any) => p.categoryId === cat.id)
-            const items = explicit.length > 0 ? explicit : (matched.length > 0 ? matched : allRawProducts.slice(0, 4))
+            const items = explicit.length > 0 ? explicit : matched
             return {
               id: cat.id,
               slug: cat.slug ?? cat.id,
@@ -80,7 +80,7 @@ export function useHomePage() {
         setHeroBanners(
           (homeBanners as BannerResponse[])
             .map(normalizeBanner)
-            .filter((banner): banner is Banner => banner?.type === 'HEADER_SLIDER')
+            .filter((banner): banner is Banner => banner !== null)
             .sort((a, b) => a.sortOrder - b.sortOrder),
         )
       })
@@ -96,5 +96,6 @@ export function useHomePage() {
     }
   }, [])
 
-  return { categorySections, budgetProducts, bestsellers, newCollections, heroBanners, loading }
+  const allProducts = [...bestsellers, ...newCollections, ...budgetProducts]
+  return { categorySections, budgetProducts, bestsellers, newCollections, heroBanners, allProducts, loading }
 }

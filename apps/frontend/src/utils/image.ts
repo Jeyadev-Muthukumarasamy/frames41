@@ -1,7 +1,17 @@
 /**
- * Helper utility to optimize image URLs by injecting resolution, quality, and format flags
- * to minimize payload transfer size and prevent network congestion.
+ * Helper utility to optimize image URLs and route Google Drive images through
+ * high-performance backend proxy for instant Amazon/Flipkart speed.
  */
+
+const preloadedUrls = new Set<string>()
+
+export function preloadImage(url: string | undefined | null) {
+  if (!url || typeof url !== 'string' || preloadedUrls.has(url)) return
+  preloadedUrls.add(url)
+  const img = new Image()
+  img.src = url
+}
+
 export function getOptimizedImageUrl(
   url: string | undefined | null,
   options: { width?: number; quality?: number; format?: 'auto' | 'webp' | 'jpg' } = {},
@@ -9,6 +19,18 @@ export function getOptimizedImageUrl(
   if (!url || typeof url !== 'string') return ''
 
   const { width = 450, quality = 80, format = 'auto' } = options
+
+  // Google Drive & proxy URL optimization
+  if (url.includes('drive.google.com') || url.includes('googleusercontent.com') || url.includes('/api/v1/images/proxy')) {
+    const matchId = url.match(/[?&]id=([a-zA-Z0-9_-]+)/) || url.match(/\/d\/([a-zA-Z0-9_-]+)/)
+    if (matchId && matchId[1]) {
+      const proxyUrl = `/api/v1/images/proxy?id=${matchId[1]}`
+      if (typeof window !== 'undefined') {
+        preloadImage(proxyUrl)
+      }
+      return proxyUrl
+    }
+  }
 
   // Unsplash URL optimization
   if (url.includes('images.unsplash.com')) {

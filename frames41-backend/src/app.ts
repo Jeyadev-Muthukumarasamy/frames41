@@ -35,6 +35,7 @@ import createReferralRoutes from './modules/referral/referral.routes.js';
 import createGiftCardRoutes from './modules/giftcard/giftcard.routes.js';
 import createHomeRoutes from './modules/home/home.routes.js';
 import createCouponRoutes from './modules/coupon/coupon.routes.js';
+import createImageRoutes from './modules/image/image.routes.js';
 import { sanitizeReviewBody, sanitizeBlogContent, sanitizeFaqContent } from './middleware/xss.middleware.js';
 
 /**
@@ -157,6 +158,7 @@ export function createApp(): express.Application {
   app.use(`${apiPrefix}/admin`, createAdminRoutes());
 
   // Catalog routes (Phase 2)
+  app.use(`${apiPrefix}/images`, createImageRoutes());
   app.use(`${apiPrefix}/home`, createHomeRoutes());
   app.use(`${apiPrefix}/categories`, createCategoryRoutes());
   app.use(`${apiPrefix}/products`, createProductRoutes());
@@ -165,6 +167,7 @@ export function createApp(): express.Application {
   // Commerce routes (Phase 3)
   app.use(`${apiPrefix}/cart`, createCartRoutes());
   app.use(`${apiPrefix}/admin/coupons`, createCouponRoutes());
+  app.use(`${apiPrefix}/coupons`, createCouponRoutes());
 
   // Checkout routes (Phase 4)
   app.use(`${apiPrefix}/orders`, createOrderRoutes());

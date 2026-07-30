@@ -10,6 +10,7 @@ import type { ReferralEntry, ReferralStats } from '@/types/refer'
 import type { OrderDetails, OrderItem, OrderStep } from '@/types/order'
 import type { TrackingStep, ShipmentEvent, OrderTrackingData, DeliveryInfo, TrackingStepStatus } from '@/types/ordertracking'
 import type { TrackingOrderItem } from '@/types/ordertracking'
+import { getOptimizedImageUrl } from '@/utils/image'
 
 // ─── Backend response shapes (loose) ─────────────────────────────────────────
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -17,37 +18,42 @@ type Raw = any
 
 // ─── Products ─────────────────────────────────────────────────────────────────
 export function adaptProduct(p: Raw): Product {
-  const price = Number(p.discountedPrice ?? p.basePrice)
-  const originalPrice = Number(p.basePrice)
-  const customizationConfig = p.customizationConfig ?? {}
-  const hasCustomization = Object.values(customizationConfig).some(
-    (option: Raw) => option?.enabled === true,
-  )
+  const price = Number(p.discountedPrice ?? p.basePrice ?? p.priceInr ?? 0)
+  const originalPrice = Number(p.basePrice ?? p.originalPriceInr ?? 0)
+  const firstImage = Array.isArray(p.images) && p.images.length > 0 ? p.images[0] : null
+  const rawUrl = firstImage?.url || firstImage?.src || p.imageUrl || p.image || p.url || p.category?.image || p.category?.imageUrl || ''
+
+  let displayName = p.name || 'Custom Photo Frame'
+  const catName = p.categoryName || p.category?.name
+  if (catName && displayName.length <= 4 && !displayName.toLowerCase().includes(catName.toLowerCase())) {
+    const cleanCat = catName.replace(/^\d+\s*/, '').trim()
+    displayName = `${cleanCat} (${p.name})`
+  }
+
   return {
     id: p.id,
     slug: p.slug ?? p.id,
-    name: p.name,
+    name: displayName,
     priceInr: price,
     originalPriceInr: originalPrice > price ? originalPrice : undefined,
-    imageUrl: p.images?.[0]?.url ?? '',
-    imageAlt: p.images?.[0]?.alt ?? p.name,
+    imageUrl: rawUrl,
+    imageAlt: firstImage?.alt || displayName,
     badge: p.isBestSeller ? 'Bestseller' : p.isFeatured ? 'Featured' : undefined,
     description: p.shortDescription ?? p.description,
-    hasOptions: (p.variants?.length ?? 0) > 0 || hasCustomization,
+    hasOptions: true,
   }
 }
 
 export function adaptProductDetail(p: Raw): ProductData {
   const rawConfig = p.customizationConfig ?? {}
-  const legacyPhotoFrame = p.category?.slug === 'photo-frames' && !p.customizationConfig
   const customizationConfig: ProductCustomizationConfig = {
     numberOfImages: {
-      enabled: rawConfig.numberOfImages?.enabled ?? legacyPhotoFrame,
-      count: rawConfig.numberOfImages?.count ?? 1,
+      enabled: true,
+      count: Math.max(1, Number(rawConfig.numberOfImages?.count ?? 1)),
     },
     numberOfNames: {
-      enabled: rawConfig.numberOfNames?.enabled ?? false,
-      count: rawConfig.numberOfNames?.count ?? 1,
+      enabled: true,
+      count: Math.max(1, Number(rawConfig.numberOfNames?.count ?? 1)),
     },
     date: { enabled: rawConfig.date?.enabled ?? false },
     songName: { enabled: rawConfig.songName?.enabled ?? false },
@@ -73,7 +79,7 @@ export function adaptProductDetail(p: Raw): ProductData {
     description: p.description ?? '',
     images: (p.images ?? []).map((img: Raw): ProductImage => ({
       id: img.id,
-      url: img.url,
+      url: getOptimizedImageUrl(img.url),
       alt: img.alt ?? p.name,
       isVideo: false,
     })),
@@ -114,7 +120,7 @@ export function adaptRelatedProduct(p: Raw): RelatedProduct {
     slug: p.slug ?? p.id,
     name: p.name,
     priceInr: Number(p.discountedPrice ?? p.basePrice),
-    imageUrl: p.images?.[0]?.url ?? '',
+    imageUrl: getOptimizedImageUrl(p.images?.[0]?.url ?? p.imageUrl ?? p.image ?? ''),
     imageAlt: p.images?.[0]?.alt ?? p.name,
     badge: p.isBestSeller ? 'Bestseller' : undefined,
     href: `/shop/${p.slug}`,
@@ -128,7 +134,7 @@ export function adaptCategory(c: Raw, index = 0): Category {
     title: c.name,
     description: c.description ?? undefined,
     cta: 'Shop Now',
-    imageUrl: c.image ?? '',
+    imageUrl: c.imageUrl ?? c.image ?? c.products?.[0]?.images?.[0]?.url ?? '',
     imageAlt: c.name,
     span: index % 3 === 0 ? 'wide' : 'narrow',
   }

@@ -8,6 +8,7 @@ interface OptimizedImageProps extends Omit<React.ImgHTMLAttributes<HTMLImageElem
   customWidth?: number
   className?: string
   fallbackSrc?: string
+  objectFit?: 'cover' | 'contain' | 'fill' | 'none'
 }
 
 const PRESET_WIDTHS = {
@@ -29,11 +30,11 @@ export default function OptimizedImage({
   loading = 'lazy',
   decoding = 'async',
   fallbackSrc,
+  objectFit = 'contain',
   onError,
   onLoad,
   ...props
 }: OptimizedImageProps) {
-  const [loaded, setLoaded] = useState(false)
   const [error, setError] = useState(false)
 
   const targetWidth = customWidth ?? PRESET_WIDTHS[widthPreset]
@@ -50,11 +51,17 @@ export default function OptimizedImage({
     ? `(max-width: 640px) 100vw, (max-width: 1024px) 50vw, ${targetWidth}px`
     : undefined
 
+  const objectFitClass =
+    objectFit === 'cover'
+      ? 'object-cover'
+      : objectFit === 'fill'
+      ? 'object-fill'
+      : objectFit === 'none'
+      ? 'object-none'
+      : 'object-contain'
+
   return (
-    <div className={`relative overflow-hidden ${className}`}>
-      {!loaded && !error && (
-        <div className="absolute inset-0 animate-pulse bg-neutral-200/70" />
-      )}
+    <div className={`relative overflow-hidden flex items-center justify-center ${className}`}>
       <img
         src={error || !src ? fallbackSrc || SVG_FALLBACK : optimizedSrc}
         srcSet={error || !src ? undefined : srcSet}
@@ -63,17 +70,13 @@ export default function OptimizedImage({
         loading={loading}
         decoding={decoding}
         onLoad={(e) => {
-          setLoaded(true)
           onLoad?.(e)
         }}
         onError={(e) => {
           setError(true)
-          setLoaded(true)
           onError?.(e)
         }}
-        className={`h-full w-full object-cover transition-opacity duration-300 ${
-          loaded ? 'opacity-100' : 'opacity-0'
-        }`}
+        className={`max-h-full max-w-full ${objectFitClass}`}
         {...props}
       />
     </div>

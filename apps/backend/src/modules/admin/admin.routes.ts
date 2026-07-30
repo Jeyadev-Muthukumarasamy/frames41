@@ -43,7 +43,9 @@ export function createAdminRoutes(): Router {
   router.get('/dashboard', controller.getCombinedDashboard);
   router.get('/dashboard/stats', controller.getDashboardStats);
   router.get('/dashboard/analytics', validate(analyticsQuerySchema), controller.getAnalytics);
+  router.get('/analytics', validate(analyticsQuerySchema), controller.getAnalytics);
   router.get('/dashboard/top-products', validate(topProductsQuerySchema), controller.getTopProducts);
+  router.get('/top-products', validate(topProductsQuerySchema), controller.getTopProducts);
 
   // Customers
   router.get('/customers', validate(customerListQuerySchema), controller.getCustomers);

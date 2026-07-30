@@ -13,12 +13,17 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
+    background-color: #f5f1df;
+    background-image: radial-gradient(rgba(128, 0, 32, 0.12) 1.2px, transparent 1.2px);
+    background-size: 24px 24px;
   }
 
   body {
     margin: 0;
-    background-color: theme('colors.background');
-    color: theme('colors.on-background');
+    background-color: #f5f1df;
+    background-image: radial-gradient(rgba(128, 0, 32, 0.12) 1.2px, transparent 1.2px);
+    background-size: 24px 24px;
+    color: #2b0b14;
     font-family: theme('fontFamily.body');
   }
 
@@ -29,6 +34,12 @@
 }
 
 @layer utilities {
+  .bg-dotted-pattern {
+    background-color: #f5f1df;
+    background-image: radial-gradient(rgba(128, 0, 32, 0.12) 1.2px, transparent 1.2px);
+    background-size: 24px 24px;
+  }
+
   .announcement-marquee {
     animation: announcement-marquee 16s linear infinite;
     will-change: transform;
@@ -88,7 +99,7 @@
   }
 
   .high-contrast-shadow {
-    box-shadow: 0 4px 0 0 #111110;
+    box-shadow: 0 4px 0 0 #800020;
   }
 
   .no-scrollbar::-webkit-scrollbar {
@@ -100,23 +111,3 @@
     scrollbar-width: none;
   }
 }
-
-/* ─── Razorpay Checkout Popup Responsive Sizing ───────────────────────────── */
-iframe.razorpay-checkout-frame,
-iframe[name="rzp_checkout_frame"],
-.razorpay-container,
-div[style*="2147483647"] iframe {
-  width: 1140px !important;
-  height: 720px !important;
-  max-width: 98vw !important;
-  max-height: 95vh !important;
-  margin: auto !important;
-  top: 0 !important;
-  bottom: 0 !important;
-  left: 0 !important;
-  right: 0 !important;
-  transform: none !important;
-}
-
-
-

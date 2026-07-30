@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import type { CartLineItem } from '../../types/shipping'
 import CartItem from './CartItem'
 
@@ -20,12 +21,12 @@ export default function CartItemList({
     return (
       <div className="flex flex-col items-center justify-center py-20 text-center">
         <p className="text-body-lg text-on-surface-variant mb-4">Your workshop is empty.</p>
-        <a
-          href="/shop"
+        <Link
+          to="/shop"
           className="font-bold uppercase tracking-widest text-[10px] text-primary-container hover:underline"
         >
           Explore the Shop
-        </a>
+        </Link>
       </div>
     )
   }

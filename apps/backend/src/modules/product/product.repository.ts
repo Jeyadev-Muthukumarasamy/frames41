@@ -31,13 +31,6 @@ export class ProductRepository implements IProductRepository {
       images: {
         orderBy: { sortOrder: 'asc' },
       },
-      variants: {
-        where: { isActive: true },
-        orderBy: { createdAt: 'asc' },
-      },
-      priceTiers: {
-        orderBy: { minQty: 'asc' },
-      },
       category: {
         select: {
           id: true,
@@ -166,25 +159,17 @@ export class ProductRepository implements IProductRepository {
     return result;
   }
 
-  private async enrichItemContext(product: ProductWithRelations | null): Promise<ProductWithRelations | null> {
-    if (!product) return null;
-
-    const [reviewAggregate, ratingBreakdown, relatedProducts] = await Promise.all([
+  private async getReviewSummary(productId: string) {
+    const [reviewAggregate, ratingBreakdown] = await Promise.all([
       this.prisma.review.aggregate({
-        where: { productId: product.id, isApproved: true },
+        where: { productId, isApproved: true },
         _avg: { rating: true },
         _count: { _all: true },
       }),
       this.prisma.review.groupBy({
         by: ['rating'],
-        where: { productId: product.id, isApproved: true },
+        where: { productId, isApproved: true },
         _count: { _all: true },
-      }),
-      this.prisma.product.findMany({
-        where: { categoryId: product.categoryId, id: { not: product.id }, isActive: true },
-        take: 4,
-        orderBy: [{ isFeatured: 'desc' }, { createdAt: 'desc' }],
-        include: this.listRelations,
       }),
     ]);
 
@@ -194,12 +179,36 @@ export class ProductRepository implements IProductRepository {
     });
 
     return {
-      ...product,
-      reviewSummary: {
-        totalReviews: reviewAggregate._count._all || 0,
-        averageRating: reviewAggregate._avg.rating || 0,
-        ratingDistribution: distMap,
+      totalReviews: reviewAggregate._count._all || 0,
+      averageRating: reviewAggregate._avg.rating || 0,
+      ratingDistribution: distMap,
+    };
+  }
+
+  private async getRelatedProducts(categoryId: string, productId: string) {
+    return this.prisma.product.findMany({
+      where: {
+        categoryId,
+        id: { not: productId },
+        isActive: true,
       },
+      take: 4,
+      orderBy: [{ isFeatured: 'desc' }, { createdAt: 'desc' }],
+      include: this.listRelations,
+    });
+  }
+
+  private async enrichItemContext(product: ProductWithRelations | null): Promise<ProductWithRelations | null> {
+    if (!product) return null;
+
+    const [reviewSummary, relatedProducts] = await Promise.all([
+      this.getReviewSummary(product.id),
+      this.getRelatedProducts(product.categoryId, product.id),
+    ]);
+
+    return {
+      ...product,
+      reviewSummary,
       relatedProducts,
     } as unknown as ProductWithRelations;
   }
@@ -224,8 +233,19 @@ export class ProductRepository implements IProductRepository {
     const raw = await this.prisma.product.findUnique({
       where: { slug },
       include: this.includeRelations,
-    }) as ProductWithRelations | null;
-    const product = await this.enrichItemContext(raw);
+    });
+    if (!raw) return null;
+
+    const [reviewSummary, relatedProducts] = await Promise.all([
+      this.getReviewSummary(raw.id),
+      this.getRelatedProducts(raw.categoryId, raw.id),
+    ]);
+
+    const product = {
+      ...raw,
+      reviewSummary,
+      relatedProducts,
+    } as ProductWithRelations;
     if (product) productCatalogCache.set(cacheKey, product);
     return product;
   }
@@ -323,7 +343,7 @@ export class ProductRepository implements IProductRepository {
         shortDescription: data.shortDescription,
         basePrice: data.basePrice,
         discountedPrice: data.discountedPrice,
-        sku: data.sku,
+        sku: data.sku || (`SKU-${Date.now().toString(36).toUpperCase()}`),
         stock: data.stock,
         isActive: data.isActive,
         isBestSeller: data.isBestSeller,

@@ -31,12 +31,6 @@ export default function createHomeRoutes(): Router {
 
   router.get('/', async (_req, res, next) => {
     try {
-      const cached = homeCache.get('home');
-      if (cached) {
-        res.setHeader('X-Cache', 'HIT');
-        res.status(200).json({ success: true, data: cached });
-        return;
-      }
 
       const now = new Date();
       const [categories, budgetProducts, bestsellers, newCollections, banners] =
@@ -80,7 +74,6 @@ export default function createHomeRoutes(): Router {
           }),
           prisma.banner.findMany({
             where: {
-              type: 'HEADER_SLIDER',
               isActive: true,
               AND: [
                 { OR: [{ startDate: null }, { startDate: { lte: now } }] },

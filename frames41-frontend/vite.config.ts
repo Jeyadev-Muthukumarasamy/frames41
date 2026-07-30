@@ -6,9 +6,7 @@ const PRODUCTION_API = "https://frames41-production.up.railway.app";
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), "");
-  const defaultTarget = mode === "development" ? "http://localhost:5001" : PRODUCTION_API;
-  const apiTarget = env.API_PROXY_TARGET || defaultTarget;
-  const isSecure = apiTarget.startsWith("https");
+  const apiTarget = env.API_PROXY_TARGET || env.VITE_API_URL || "http://localhost:5001";
 
   return {
     plugins: [react()],
@@ -16,9 +14,10 @@ export default defineConfig(({ mode }) => {
       alias: { "@": path.resolve(__dirname, "./src") },
     },
     server: {
+      port: 5173,
       proxy: {
-        "/api": { target: apiTarget, changeOrigin: true, secure: isSecure },
-        "/webhooks": { target: apiTarget, changeOrigin: true, secure: isSecure },
+        "/api": { target: apiTarget, changeOrigin: true, secure: false },
+        "/webhooks": { target: apiTarget, changeOrigin: true, secure: false },
       },
     },
     build: {

@@ -323,7 +323,7 @@ export class ProductRepository implements IProductRepository {
         shortDescription: data.shortDescription,
         basePrice: data.basePrice,
         discountedPrice: data.discountedPrice,
-        sku: data.sku,
+        sku: data.sku || (`SKU-${Date.now().toString(36).toUpperCase()}`),
         stock: data.stock,
         isActive: data.isActive,
         isBestSeller: data.isBestSeller,
@@ -443,6 +443,12 @@ export class ProductRepository implements IProductRepository {
       where: {
         sku: { in: skus, mode: 'insensitive' },
         ...(excludeProductId ? { productId: { not: excludeProductId } } : {}),
+      },
+      select: { sku: true },
+    });
+    return existing.map((v) => v.sku);
+  }
+}
       },
       select: { sku: true },
     });

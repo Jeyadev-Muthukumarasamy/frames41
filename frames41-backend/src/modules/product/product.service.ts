@@ -76,16 +76,19 @@ export class ProductService implements IProductService {
   }
 
   async createProduct(data: CreateProductData): Promise<ProductWithRelations> {
+    const skuToUse = data.sku || (`SKU-${Date.now().toString(36).toUpperCase()}`);
+    const payload = { ...data, sku: skuToUse };
+
     // Validate slug uniqueness
-    const slugExists = await this.repository.slugExists(data.slug);
+    const slugExists = await this.repository.slugExists(payload.slug);
     if (slugExists) {
-      throw new ConflictError(`Product with slug "${data.slug}" already exists`);
+      throw new ConflictError(`Product with slug "${payload.slug}" already exists`);
     }
 
     // Validate SKU uniqueness
-    const skuExists = await this.repository.skuExists(data.sku);
+    const skuExists = await this.repository.skuExists(payload.sku);
     if (skuExists) {
-      throw new ConflictError(`Product with SKU "${data.sku}" already exists`);
+      throw new ConflictError(`Product with SKU "${payload.sku}" already exists`);
     }
 
     // Validate variants have unique SKUs and don't conflict with existing variants

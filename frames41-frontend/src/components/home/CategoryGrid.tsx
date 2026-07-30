@@ -1,4 +1,5 @@
 import { memo } from 'react'
+import { Link } from 'react-router-dom'
 import type { Category } from '../../types/home'
 import Icon from '../ui/Icon'
 import OptimizedImage from '../ui/OptimizedImage'
@@ -52,12 +53,12 @@ const CategoryCard = memo(function CategoryCard({ category, index }: CategoryCar
             {category.description}
           </p>
         )}
-        <a
-          href={`/shop?categoryId=${category.id}`}
+        <Link
+          to={`/shop?categoryId=${category.id}`}
           className="text-[10px] font-bold uppercase tracking-widest border-b border-white pb-1 hover:opacity-80 transition-opacity"
         >
           {category.cta}
-        </a>
+        </Link>
       </div>
     </article>
   )
@@ -95,8 +96,8 @@ export default function CategoryGrid({ categories }: CategoryGridProps) {
       </div>
 
       <div className="flex justify-center mt-8 sm:mt-12">
-        <a
-          href="/shop"
+        <Link
+          to="/shop"
           className="inline-flex items-center justify-center rounded-full border border-on-background/20 px-8 py-3 text-xs font-bold uppercase tracking-widest hover:bg-on-background hover:text-white transition-all"
         >
           View All
@@ -104,7 +105,7 @@ export default function CategoryGrid({ categories }: CategoryGridProps) {
             name="arrow_forward"
             className="text-sm ml-2 group-hover:translate-x-1 transition-transform"
           />
-        </a>
+        </Link>
       </div>
     </section>
   )

@@ -9,6 +9,7 @@ import { adaptProductListing } from '../../lib/adapters'
 import { formatINR } from '../../utils/format'
 import type { ProductListingProduct } from '../../types/productListing'
 import { getProductHref } from '@/utils/productListing'
+import OptimizedImage from '../ui/OptimizedImage'
 
 interface NavbarProps {
   links: ReadonlyArray<NavLink>
@@ -246,11 +247,11 @@ export default function Navbar({
                         >
                           <div className="w-12 h-12 rounded-lg bg-on-background/5 overflow-hidden shrink-0 flex items-center justify-center">
                             {product.imageUrl ? (
-                              <img
+                              <OptimizedImage
                                 src={product.imageUrl}
                                 alt={product.imageAlt}
+                                widthPreset="thumbnail"
                                 className="w-full h-full object-cover"
-                                loading="lazy"
                               />
                             ) : (
                               <Icon name="image" className="text-on-background/20" />

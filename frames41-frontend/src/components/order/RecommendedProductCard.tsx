@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import type { RecommendedProduct } from '../../types/order'
 import { formatINR } from '../../utils/format'
 
@@ -14,8 +15,8 @@ export default function RecommendedProductCard({
 
   return (
     <article>
-      <a
-        href={`/shop/${product.slug}`}
+      <Link
+        to={`/shop/${product.slug}`}
         aria-label={`${name} – ${subtitle}, ${formatINR(priceInr)}`}
         onClick={(e) => {
           if (onSelect) {
@@ -47,7 +48,7 @@ export default function RecommendedProductCard({
             {formatINR(priceInr)}
           </span>
         </div>
-      </a>
+      </Link>
     </article>
   )
 }

@@ -5,12 +5,12 @@ import CategoryProductsSection from '../components/home/CategoryProductsSection'
 import BudgetSection from '../components/home/BudgetSection'
 import NewCollectionsSection from '../components/home/NewCollectionsSection'
 import BestsellersSection from '../components/home/BestsellersSection'
+import CustomerReviewsSection from '../components/home/CustomerReviewsSection'
 import NewsletterStrip from '../components/home/NewsletterStrip'
 import Footer from '@/components/layout/Footer'
 import ChatFab from '@/components/layout/ChatFab'
 import ProductSectionShimmer from '../components/ui/ProductSectionShimmer'
 import { useHomePage } from '../hooks/useHomePage'
-import { useCart } from '../contexts/CartContext'
 import {
   NAV_LINKS,
   HERO,
@@ -19,8 +19,7 @@ import {
 } from '../constants/home'
 
 export default function HomePage() {
-  const { categorySections, budgetProducts, bestsellers, newCollections, heroBanners, loading } = useHomePage()
-  const { addItem } = useCart()
+  const { categorySections, budgetProducts, bestsellers, newCollections, heroBanners, allProducts, loading } = useHomePage()
 
   return (
     <>
@@ -30,6 +29,7 @@ export default function HomePage() {
         <HeroSection
           data={HERO}
           banners={heroBanners}
+          products={allProducts}
           onExploreCta={() => {
             const el = document.getElementById('collections')
             if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
@@ -63,10 +63,7 @@ export default function HomePage() {
         {loading && !categorySections.length ? (
           <ProductSectionShimmer title="Categories" count={4} />
         ) : (
-          <CategoryProductsSection
-            sections={categorySections}
-            onAddToCart={(productId) => addItem(productId, 1)}
-          />
+          <CategoryProductsSection sections={categorySections} />
         )}
         {loading && !budgetProducts.length ? (
           <ProductSectionShimmer
@@ -81,11 +78,9 @@ export default function HomePage() {
         {loading && !bestsellers.length ? (
           <ProductSectionShimmer title="Bestsellers" count={3} layout="wide" />
         ) : (
-          <BestsellersSection
-            products={bestsellers}
-            onAddToCart={(productId) => addItem(productId, 1)}
-          />
+          <BestsellersSection products={bestsellers} />
         )}
+        <CustomerReviewsSection />
         <NewsletterStrip />
       </main>
       <Footer columns={FOOTER_COLUMNS} socialLinks={SOCIAL_LINKS} />

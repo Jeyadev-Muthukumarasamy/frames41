@@ -36,18 +36,18 @@ function SocialIcon({ name }: { name: string }) {
 
 export default function Footer({ columns, socialLinks }: FooterProps) {
   return (
-    <footer className="bg-on-background text-background border-t border-white/5">
+    <footer className="bg-gradient-to-b from-[#260710] via-[#1a040b] to-[#0e0206] text-amber-100 border-t border-rose-500/30">
       <div className="max-w-container mx-auto px-4 sm:px-8 pt-16 sm:pt-xl pb-md">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-10 sm:gap-16 mb-12 sm:mb-20">
           <div className="col-span-1">
             <a
               href="/"
               aria-label="Frames 41 home"
-              className="text-3xl font-headline italic mb-8 block"
+              className="text-3xl font-headline italic mb-8 block text-amber-200"
             >
               Frames 41
             </a>
-            <p className="text-white/40 text-sm mb-8 leading-relaxed">
+            <p className="text-amber-200/60 text-sm mb-8 leading-relaxed">
               Bringing the timeless beauty of raw materials into modern living through
               conscious craftsmanship.
             </p>
@@ -60,7 +60,7 @@ export default function Footer({ columns, socialLinks }: FooterProps) {
                       aria-label={label}
                       rel="noopener noreferrer"
                       target={href.startsWith('http') ? '_blank' : undefined}
-                      className="text-white/40 hover:text-white transition-colors"
+                      className="text-amber-200/50 hover:text-amber-300 transition-colors"
                     >
                       <SocialIcon name={icon} />
                     </a>
@@ -72,13 +72,13 @@ export default function Footer({ columns, socialLinks }: FooterProps) {
 
           {columns.map((col) => (
             <div key={col.heading}>
-              <h3 className="text-white text-label-bold mb-8 uppercase text-[10px] tracking-[0.3em]">
+              <h3 className="text-amber-300 text-label-bold mb-8 uppercase text-[10px] tracking-[0.3em]">
                 {col.heading}
               </h3>
-              <ul className="flex flex-col gap-4 list-none m-0 p-0 text-sm text-white/40">
+              <ul className="flex flex-col gap-4 list-none m-0 p-0 text-sm text-amber-200/60">
                 {col.links.map(({ label, href }) => (
                   <li key={href}>
-                    <a href={href} className="hover:text-white transition-colors">
+                    <a href={href} className="hover:text-amber-300 transition-colors">
                       {label}
                     </a>
                   </li>
@@ -88,11 +88,11 @@ export default function Footer({ columns, socialLinks }: FooterProps) {
           ))}
         </div>
 
-        <div className="border-t border-white/5 pt-8 sm:pt-12 pb-6 sm:pb-8 flex flex-col md:flex-row justify-between items-center gap-4 sm:gap-6">
-          <p className="text-white/20 text-[10px] font-bold uppercase tracking-[0.3em]">
+        <div className="border-t border-rose-500/20 pt-8 sm:pt-12 pb-6 sm:pb-8 flex flex-col md:flex-row justify-between items-center gap-4 sm:gap-6">
+          <p className="text-amber-200/40 text-[10px] font-bold uppercase tracking-[0.3em]">
             © {new Date().getFullYear()} Frames 41 Co. All Rights Reserved.
           </p>
-          <div className="flex gap-6 grayscale opacity-30" aria-hidden="true">
+          <div className="flex gap-6 text-amber-300/40" aria-hidden="true">
             <Icon name="credit_card" className="text-xl" />
             <Icon name="account_balance" className="text-xl" />
             <Icon name="token" className="text-xl" />
