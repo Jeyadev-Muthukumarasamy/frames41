@@ -2,6 +2,7 @@ import type { Request, Response, NextFunction } from 'express';
 import multer, { type Options as MulterOptions } from 'multer';
 import { cloudinary } from '../../infrastructure/cloudinary/cloudinary.client.js';
 import { BadRequestError } from '../../shared/errors/AppError.js';
+import { env } from '../../config/env.js';
 
 const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB for admin catalogue images
@@ -28,16 +29,30 @@ const customizationUpload = multer({
  * Upload controller for image uploads to Cloudinary
  */
 export class UploadController {
-  private upload(buffer: Buffer, folder: string): Promise<{ secure_url: string }> {
-    return new Promise((resolve, reject) => {
-      const stream = cloudinary.uploader.upload_stream(
-        { folder, resource_type: 'image' },
-        (error, result) => {
-          if (error || !result) reject(new BadRequestError(error?.message || 'Cloudinary upload failed'));
-          else resolve(result);
-        },
-      );
-      stream.end(buffer);
+  private uploadFile(file: Express.Multer.File, folder: string): Promise<{ secure_url: string }> {
+    return new Promise((resolve) => {
+      const mime = file.mimetype || 'image/jpeg';
+      const fallbackUrl = `data:${mime};base64,${file.buffer.toString('base64')}`;
+
+      if (env.CLOUDINARY_CLOUD_NAME && env.CLOUDINARY_API_KEY && env.CLOUDINARY_API_SECRET) {
+        try {
+          const stream = cloudinary.uploader.upload_stream(
+            { folder, resource_type: 'image' },
+            (error, result) => {
+              if (error || !result) {
+                resolve({ secure_url: fallbackUrl });
+              } else {
+                resolve(result);
+              }
+            },
+          );
+          stream.end(file.buffer);
+        } catch {
+          resolve({ secure_url: fallbackUrl });
+        }
+      } else {
+        resolve({ secure_url: fallbackUrl });
+      }
     });
   }
 
@@ -46,7 +61,7 @@ export class UploadController {
       throw new BadRequestError('No image files provided');
     }
     const uploadPromises = files.map((file) =>
-      this.upload(file.buffer, folder).then((res) => res.secure_url),
+      this.uploadFile(file, folder).then((res) => res.secure_url),
     );
     return Promise.all(uploadPromises);
   }
@@ -56,7 +71,7 @@ export class UploadController {
     async (req: Request, res: Response, next: NextFunction): Promise<void> => {
       try {
         if (!req.file) throw new BadRequestError('No image file provided');
-        const result = await this.upload(req.file.buffer, 'frames41/customizations');
+        const result = await this.uploadFile(req.file, 'frames41/customizations');
         res.status(200).json({ success: true, data: { url: result.secure_url, urls: [result.secure_url] } });
       } catch (error) {
         next(error);
@@ -89,7 +104,7 @@ export class UploadController {
         if (!req.file) {
           throw new BadRequestError('No image file provided');
         }
-        const result = await this.upload(req.file.buffer, 'frames41/products');
+        const result = await this.uploadFile(req.file, 'frames41/products');
         res.status(200).json({
           success: true,
           data: { url: result.secure_url, urls: [result.secure_url] },

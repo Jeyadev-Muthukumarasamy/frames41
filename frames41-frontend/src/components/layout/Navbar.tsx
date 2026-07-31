@@ -4,6 +4,7 @@ import type { NavLink } from '../../types/home'
 import Icon from '../ui/Icon'
 import { useCart } from '../../contexts/CartContext'
 import { useAuth } from '../../contexts/AuthContext'
+import { useWishlist } from '../../hooks/useWishlist'
 import { api } from '../../lib/api'
 import { adaptProductListing } from '../../lib/adapters'
 import { formatINR } from '../../utils/format'
@@ -43,6 +44,8 @@ export default function Navbar({
   const { pathname } = useLocation()
   const { itemCount } = useCart()
   const { isAuthenticated } = useAuth()
+  const { items: wishlistItems } = useWishlist()
+  const wishlistCount = wishlistItems.length
   const searchRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
@@ -279,11 +282,27 @@ export default function Navbar({
           </div>
 
           <div className="flex items-center gap-4 sm:ml-6">
+            <Link
+              to="/wishlist"
+              aria-label={`Wishlist${wishlistCount > 0 ? ` – ${wishlistCount} item${wishlistCount !== 1 ? 's' : ''}` : ''}`}
+              className="relative hover:text-primary transition-colors flex items-center justify-center p-1"
+            >
+              <Icon name="favorite_border" />
+              {wishlistCount > 0 && (
+                <span
+                  aria-hidden="true"
+                  className="absolute -top-1 -right-1 bg-primary text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center font-bold"
+                >
+                  {wishlistCount}
+                </span>
+              )}
+            </Link>
+
             <button
               type="button"
               onClick={handleProfileClick}
               aria-label="My account"
-              className="hover:text-primary transition-colors"
+              className="hover:text-primary transition-colors p-1"
             >
               <Icon name="person" />
             </button>
@@ -292,7 +311,7 @@ export default function Navbar({
               type="button"
               onClick={handleCartClick}
               aria-label={`Shopping cart – ${itemCount} item${itemCount !== 1 ? 's' : ''}`}
-              className="relative hover:text-primary transition-colors"
+              className="relative hover:text-primary transition-colors p-1"
             >
               <Icon name="shopping_cart" />
               {itemCount > 0 && (
@@ -304,7 +323,7 @@ export default function Navbar({
                 </span>
               )}
             </button>
-        </div>
+          </div>
       </div>
     </nav>
   )

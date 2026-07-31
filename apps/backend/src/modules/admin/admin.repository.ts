@@ -22,8 +22,10 @@ export class AdminRepository implements IAdminRepository {
   }
 
   async getDashboardStats(): Promise<DashboardStats> {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    const now = new Date();
+    const utcStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 0, 0, 0, 0));
+    const localStart = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0);
+    const today = utcStart < localStart ? utcStart : localStart;
 
     const [
       totalUsers,

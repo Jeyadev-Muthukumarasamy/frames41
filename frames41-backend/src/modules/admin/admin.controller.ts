@@ -6,6 +6,29 @@ import type { Request, Response, NextFunction } from 'express';
 import type { IAdminService } from './admin.types.js';
 import { BadRequestError } from '../../shared/errors/AppError.js';
 
+function parseDateRange(startStr?: unknown, endStr?: unknown): { startDate?: Date; endDate?: Date } {
+  let startDate: Date | undefined;
+  let endDate: Date | undefined;
+
+  if (startStr && typeof startStr === 'string') {
+    const d = new Date(startStr);
+    if (!isNaN(d.getTime())) {
+      d.setHours(0, 0, 0, 0);
+      startDate = d;
+    }
+  }
+
+  if (endStr && typeof endStr === 'string') {
+    const d = new Date(endStr);
+    if (!isNaN(d.getTime())) {
+      d.setHours(23, 59, 59, 999);
+      endDate = d;
+    }
+  }
+
+  return { startDate, endDate };
+}
+
 export class AdminController {
   private readonly service: IAdminService;
 
@@ -19,8 +42,7 @@ export class AdminController {
   getCombinedDashboard = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const period = (req.query.period as string) || 'day';
-      const startDate = req.query.startDate ? new Date(req.query.startDate as string) : undefined;
-      const endDate = req.query.endDate ? new Date(req.query.endDate as string) : undefined;
+      const { startDate, endDate } = parseDateRange(req.query.startDate, req.query.endDate);
       const limit = Math.min(50, Math.max(1, parseInt(req.query.limit as string, 10) || 10));
 
       const [stats, analytics, topProducts] = await Promise.all([
@@ -61,17 +83,8 @@ export class AdminController {
    */
   getAnalytics = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const { period, startDate, endDate } = req.query;
-
-      let parsedStartDate: Date | undefined;
-      let parsedEndDate: Date | undefined;
-
-      if (startDate && typeof startDate === 'string') {
-        parsedStartDate = new Date(startDate);
-      }
-      if (endDate && typeof endDate === 'string') {
-        parsedEndDate = new Date(endDate);
-      }
+      const { period } = req.query;
+      const { startDate: parsedStartDate, endDate: parsedEndDate } = parseDateRange(req.query.startDate, req.query.endDate);
 
       const analytics = await this.service.getAnalytics(
         period as string,
@@ -95,16 +108,7 @@ export class AdminController {
   getTopProducts = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const limit = Math.min(50, Math.max(1, parseInt(req.query.limit as string, 10) || 10));
-
-      let startDate: Date | undefined;
-      let endDate: Date | undefined;
-
-      if (req.query.startDate && typeof req.query.startDate === 'string') {
-        startDate = new Date(req.query.startDate);
-      }
-      if (req.query.endDate && typeof req.query.endDate === 'string') {
-        endDate = new Date(req.query.endDate);
-      }
+      const { startDate, endDate } = parseDateRange(req.query.startDate, req.query.endDate);
 
       const products = await this.service.getTopProducts(limit, startDate, endDate);
 
@@ -172,16 +176,7 @@ export class AdminController {
       const limit = Math.min(100, Math.max(1, parseInt(req.query.limit as string, 10) || 20));
       const status = req.query.status as import('@prisma/client').OrderStatus | undefined;
       const search = typeof req.query.search === 'string' ? req.query.search : undefined;
-
-      let startDate: Date | undefined;
-      let endDate: Date | undefined;
-
-      if (req.query.startDate && typeof req.query.startDate === 'string') {
-        startDate = new Date(req.query.startDate);
-      }
-      if (req.query.endDate && typeof req.query.endDate === 'string') {
-        endDate = new Date(req.query.endDate);
-      }
+      const { startDate, endDate } = parseDateRange(req.query.startDate, req.query.endDate);
 
       const result = await this.service.getOrders({ page, limit, status, search, startDate, endDate });
 

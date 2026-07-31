@@ -14,11 +14,12 @@ const imageBufferCache = createLRUCache<string, CachedImage>({
 
 const DEFAULT_SVG_FALLBACK = `
 <svg xmlns="http://www.w3.org/2000/svg" width="400" height="400" viewBox="0 0 400 400">
-  <rect width="400" height="400" fill="#2d180e"/>
-  <rect x="40" y="40" width="320" height="320" rx="16" fill="#3a2012" stroke="#d97706" stroke-width="3"/>
-  <circle cx="200" cy="160" r="40" fill="#f59e0b" opacity="0.8"/>
-  <path d="M100 280 L160 200 L220 280 L260 230 L300 280 Z" fill="#d97706"/>
-  <text x="200" y="330" font-family="sans-serif" font-size="16" font-weight="bold" fill="#fef3c7" text-anchor="middle">Frames41 Photo Frame</text>
+  <rect width="400" height="400" fill="#f5f1df"/>
+  <rect x="30" y="30" width="340" height="340" rx="20" fill="#faf8f0" stroke="#800020" stroke-width="3"/>
+  <circle cx="200" cy="170" r="45" fill="#800020" opacity="0.15"/>
+  <path d="M200 140 L212 165 L238 168 L218 186 L224 212 L200 197 L176 212 L182 186 L162 168 L188 165 Z" fill="#800020"/>
+  <text x="200" y="270" font-family="sans-serif" font-size="18" font-weight="900" fill="#800020" text-anchor="middle">Frames 41</text>
+  <text x="200" y="295" font-family="sans-serif" font-size="12" font-weight="600" fill="#58111a" opacity="0.8" text-anchor="middle">Handcrafted Wooden Gift</text>
 </svg>
 `.trim();
 
@@ -77,9 +78,10 @@ export class ImageController {
     if (cached) return cached;
 
     const driveEndpoints = [
-      `https://drive.google.com/thumbnail?id=${fileId}&sz=w1000`,
-      `https://drive.google.com/uc?export=download&id=${fileId}`,
+      `https://lh3.googleusercontent.com/d/${fileId}=s1000`,
       `https://lh3.googleusercontent.com/d/${fileId}`,
+      `https://drive.google.com/uc?export=download&id=${fileId}`,
+      `https://drive.google.com/thumbnail?id=${fileId}&sz=w1000`,
     ];
 
     for (const fetchUrl of driveEndpoints) {

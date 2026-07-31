@@ -107,15 +107,18 @@ export class OrderService implements IOrderService {
         );
       }
       for (const [productId, quantity] of quantityByProduct) {
-        const updated = await tx.$executeRaw`
-          UPDATE products
-          SET stock = stock - ${quantity}
-          WHERE id = ${productId}::uuid AND stock >= ${quantity}
-        `;
-        if (updated !== 1) {
+        const product = await tx.product.findUnique({
+          where: { id: productId },
+          select: { id: true, name: true, stock: true },
+        });
+        if (!product || product.stock < quantity) {
           const item = cart.items.find((candidate) => candidate.productId === productId);
-          throw new BadRequestError(`Insufficient stock for ${item?.product.name ?? 'product'}`);
+          throw new BadRequestError(`Insufficient stock for ${item?.product.name ?? product?.name ?? 'product'}`);
         }
+        await tx.product.update({
+          where: { id: productId },
+          data: { stock: { decrement: quantity } },
+        });
       }
 
       const orderNumber = `F41-${generateOrderNumber()}`;
@@ -146,11 +149,10 @@ export class OrderService implements IOrderService {
                 (Array.isArray(rawCust?.imageUrls) && rawCust.imageUrls[0] ? String(rawCust.imageUrls[0]) : undefined);
               return {
                 productId: item.productId,
-                customImageUrl: customImg,
                 productSnapshot: {
                   name: item.product.name,
                   slug: item.product.slug,
-                  image: customImg ?? item.product.images[0]?.url,
+                  image: customImg ?? item.product.images[0]?.url ?? '',
                   sku: item.product.sku,
                 },
                 quantity: item.quantity,

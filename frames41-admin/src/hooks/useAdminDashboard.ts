@@ -20,6 +20,15 @@ export function useAdminDashboard(period: Period, startDate?: string, endDate?: 
   })
 
   const fetch = useCallback(async () => {
+    if (period === 'custom' && (!startDate || !endDate)) {
+      setData((d) => ({
+        ...d,
+        loading: false,
+        error: null,
+      }))
+      return
+    }
+
     setData((d) => ({ ...d, loading: true, error: null }))
     try {
       const { stats, analytics, topProducts } = await api.admin.getDashboard(period, startDate, endDate, 10)
@@ -33,7 +42,9 @@ export function useAdminDashboard(period: Period, startDate?: string, endDate?: 
     }
   }, [period, startDate, endDate])
 
-  useEffect(() => { fetch() }, [fetch])
+  useEffect(() => {
+    fetch()
+  }, [fetch])
 
   return { ...data, refresh: fetch }
 }

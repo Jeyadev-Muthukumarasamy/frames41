@@ -57,7 +57,7 @@ export default function CustomerCustomizationForm({
     <section className="space-y-4 rounded-xl border border-outline-variant bg-white p-4 sm:p-5">
       <div>
         <h2 className="font-bold text-on-background">Personalise this product</h2>
-        <p className="mt-1 text-sm text-on-surface-variant">Complete the required details below.</p>
+        <p className="mt-1 text-sm text-on-surface-variant">Add optional personalisation details below if desired.</p>
       </div>
 
       {config.startingFrom.enabled && config.startingFrom.amount !== undefined && (
@@ -68,7 +68,7 @@ export default function CustomerCustomizationForm({
 
       {config.numberOfImages.enabled && (
         <label className="block text-sm font-bold text-on-background">
-          Upload {config.numberOfImages.count} image{config.numberOfImages.count === 1 ? '' : 's'} *
+          Upload up to {config.numberOfImages.count} image{config.numberOfImages.count === 1 ? '' : 's'} <span className="font-normal text-on-surface-variant text-xs">(Optional)</span>
           <input
             type="file"
             multiple={config.numberOfImages.count > 1}
@@ -88,14 +88,14 @@ export default function CustomerCustomizationForm({
       {config.numberOfNames.enabled && (
         <div className="space-y-3">
           <p className="text-sm font-bold text-on-background">
-            Enter {config.numberOfNames.count} name{config.numberOfNames.count === 1 ? '' : 's'} *
+            Enter up to {config.numberOfNames.count} name{config.numberOfNames.count === 1 ? '' : 's'} <span className="font-normal text-on-surface-variant text-xs">(Optional)</span>
           </p>
           {Array.from({ length: config.numberOfNames.count }, (_, index) => (
             <input
               key={index}
               value={names[index] ?? ''}
               maxLength={100}
-              placeholder={`Name ${index + 1}`}
+              placeholder={`Name ${index + 1} (Optional)`}
               onChange={(event) => {
                 const next = Array.from({ length: config.numberOfNames.count }, (_, i) => names[i] ?? '')
                 next[index] = event.target.value
@@ -109,7 +109,7 @@ export default function CustomerCustomizationForm({
 
       {config.date.enabled && (
         <label className="block text-sm font-bold text-on-background">
-          Date *
+          Date <span className="font-normal text-on-surface-variant text-xs">(Optional)</span>
           <input
             type="date"
             value={date}
@@ -121,12 +121,12 @@ export default function CustomerCustomizationForm({
 
       {config.songName.enabled && (
         <label className="block text-sm font-bold text-on-background">
-          Name of the song *
+          Name of the song <span className="font-normal text-on-surface-variant text-xs">(Optional)</span>
           <input
             value={songName}
             maxLength={200}
             onChange={(event) => onSongNameChange(event.target.value)}
-            placeholder="Enter the song name"
+            placeholder="Enter the song name (Optional)"
             className="mt-2 block w-full rounded-lg border border-outline-variant bg-background px-3 py-2 text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary"
           />
         </label>
@@ -134,7 +134,7 @@ export default function CustomerCustomizationForm({
 
       {config.qrCodeImages.enabled && (
         <label className="block text-sm font-bold text-on-background">
-          Upload {config.qrCodeImages.count} QR code image{config.qrCodeImages.count === 1 ? '' : 's'} *
+          Upload up to {config.qrCodeImages.count} QR code image{config.qrCodeImages.count === 1 ? '' : 's'} <span className="font-normal text-on-surface-variant text-xs">(Optional)</span>
           <input
             type="file"
             multiple={config.qrCodeImages.count > 1}

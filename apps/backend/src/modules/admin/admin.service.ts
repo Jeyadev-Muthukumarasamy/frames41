@@ -39,36 +39,37 @@ export class AdminService implements IAdminService {
 
     switch (period) {
       case 'today': {
-        calculatedStartDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-        calculatedEndDate = now;
+        calculatedStartDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0);
+        calculatedEndDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
         break;
       }
       case 'week': {
         calculatedStartDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-        calculatedEndDate = now;
+        calculatedStartDate.setHours(0, 0, 0, 0);
+        calculatedEndDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
         break;
       }
       case 'month': {
-        calculatedStartDate = new Date(now.getFullYear(), now.getMonth(), 1);
-        calculatedEndDate = now;
+        calculatedStartDate = new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0, 0);
+        calculatedEndDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
         break;
       }
       case 'year': {
-        calculatedStartDate = new Date(now.getFullYear(), 0, 1);
-        calculatedEndDate = now;
+        calculatedStartDate = new Date(now.getFullYear(), 0, 1, 0, 0, 0, 0);
+        calculatedEndDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
         break;
       }
       case 'custom': {
-        if (!startDate || !endDate) {
-          throw new BadRequestError('Custom period requires startDate and endDate');
-        }
-        calculatedStartDate = startDate;
-        calculatedEndDate = endDate;
+        calculatedStartDate = startDate ? new Date(startDate) : new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+        calculatedStartDate.setHours(0, 0, 0, 0);
+
+        calculatedEndDate = endDate ? new Date(endDate) : new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
+        calculatedEndDate.setHours(23, 59, 59, 999);
         break;
       }
       default: {
-        calculatedStartDate = new Date(now.getFullYear(), now.getMonth(), 1);
-        calculatedEndDate = now;
+        calculatedStartDate = new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0, 0);
+        calculatedEndDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
       }
     }
 

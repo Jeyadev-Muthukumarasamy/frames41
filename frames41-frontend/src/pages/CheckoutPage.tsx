@@ -130,7 +130,7 @@ function AuthenticatedCheckout() {
   const defaultAddress = checkoutData.addresses[0]?.id ?? ''
 
   async function handleSaveAddress(data: AddressFormData) {
-    await api.users.createAddress({
+    const saved = await api.users.createAddress({
       line1: data.line1,
       line2: data.line2 || undefined,
       city: data.city,
@@ -140,6 +140,7 @@ function AuthenticatedCheckout() {
     })
     toast.success('Address saved')
     await refresh()
+    return saved
   }
 
   return (

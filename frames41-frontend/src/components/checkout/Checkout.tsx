@@ -37,22 +37,33 @@ export default function Checkout({
   onApplyCoupon,
   onRemoveCoupon,
 }: CheckoutProps) {
-  const [selectedAddressId, setSelectedAddressId] = useState(defaultAddressId)
+  const [selectedAddressId, setSelectedAddressId] = useState(defaultAddressId || data.addresses[0]?.id || '')
   const [selectedDeliveryId, setSelectedDeliveryId] = useState(defaultDeliveryId)
   const [showAddressForm, setShowAddressForm] = useState(false)
+
+  // Ensure selectedAddressId stays valid when data.addresses loads or updates
+  if (!selectedAddressId && data.addresses.length > 0) {
+    setSelectedAddressId(data.addresses[0].id)
+  } else if (selectedAddressId && data.addresses.length > 0 && !data.addresses.some((a) => a.id === selectedAddressId)) {
+    setSelectedAddressId(data.addresses[0].id)
+  }
 
   const selectedDelivery = data.deliveryMethods.find((m) => m.id === selectedDeliveryId)
 
   function handleProceed() {
     onProceedToPayment?.({
-      addressId: selectedAddressId,
+      addressId: selectedAddressId || data.addresses[0]?.id || '',
       deliveryMethodId: selectedDeliveryId,
     })
   }
 
   async function handleSaveAddress(formData: AddressFormData) {
     if (!onSaveAddress) return
-    await onSaveAddress(formData)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const saved = await onSaveAddress(formData) as any
+    if (saved?.id) {
+      setSelectedAddressId(saved.id)
+    }
     setShowAddressForm(false)
   }
 

@@ -10,8 +10,8 @@ async function main(): Promise<void> {
   console.log('🌱 Seeding database...')
 
   // ─── Admin User ──────────────────────────────────────────────────────────────
-  const adminEmail = process.env.ADMIN_EMAIL ?? 'admin@frames41.com'
-  const adminPassword = process.env.ADMIN_PASSWORD ?? 'Admin@1234'
+  const adminEmail = process.env.ADMIN_EMAIL ?? 'rsabari8991@gmail.com'
+  const adminPassword = process.env.ADMIN_PASSWORD ?? 'Lingesh0000'
 
   const { hash } = await import('argon2')
   const adminPasswordHash = await hash(adminPassword, {

@@ -65,29 +65,7 @@ export default function ProductDetail({
 
   const handleAddToCart = useCallback(async () => {
     if (!onAddToCart || cartStatus !== 'idle') return
-    if (config.numberOfImages.enabled && images.length !== config.numberOfImages.count) {
-      setCustomizationError(`Please upload exactly ${config.numberOfImages.count} image(s).`)
-      return
-    }
-    if (config.numberOfNames.enabled && (
-      names.length !== config.numberOfNames.count ||
-      names.some((name) => !name.trim())
-    )) {
-      setCustomizationError(`Please enter all ${config.numberOfNames.count} name(s).`)
-      return
-    }
-    if (config.date.enabled && !date) {
-      setCustomizationError('Please select a date.')
-      return
-    }
-    if (config.songName.enabled && !songName.trim()) {
-      setCustomizationError('Please enter the song name.')
-      return
-    }
-    if (config.qrCodeImages.enabled && qrCodeImages.length !== config.qrCodeImages.count) {
-      setCustomizationError(`Please upload exactly ${config.qrCodeImages.count} QR code image(s).`)
-      return
-    }
+
     const oversizedFile = [...images, ...qrCodeImages].find((file) => file.size > 200 * 1024 * 1024)
     if (oversizedFile) {
       setCustomizationError(`${oversizedFile.name} must be 200 MB or smaller.`)
@@ -99,28 +77,31 @@ export default function ProductDetail({
       const customization: Record<string, unknown> = {}
       let customImageUrl: string | undefined
 
-      if (isAuthenticated) {
-        const { api } = await import('../../lib/api')
-        const imageUrls = await Promise.all(
-          images.map(async (file) => (await api.cart.uploadPhoto(file)).url),
-        )
-        const qrCodeImageUrls = await Promise.all(
-          qrCodeImages.map(async (file) => (await api.cart.uploadPhoto(file)).url),
-        )
-        if (imageUrls.length) customization.imageUrls = imageUrls
-        if (qrCodeImageUrls.length) customization.qrCodeImageUrls = qrCodeImageUrls
-        customImageUrl = imageUrls[0]
-      } else {
-        const imageDataUrls = await Promise.all(images.map(fileToDataUrl))
-        const qrCodeImageDataUrls = await Promise.all(qrCodeImages.map(fileToDataUrl))
-        if (imageDataUrls.length) customization.imageDataUrls = imageDataUrls
-        if (qrCodeImageDataUrls.length) customization.qrCodeImageDataUrls = qrCodeImageDataUrls
-        customImageUrl = imageDataUrls[0]
+      if (images.length > 0 || qrCodeImages.length > 0) {
+        if (isAuthenticated) {
+          const { api } = await import('../../lib/api')
+          const imageUrls = await Promise.all(
+            images.map(async (file) => (await api.cart.uploadPhoto(file)).url),
+          )
+          const qrCodeImageUrls = await Promise.all(
+            qrCodeImages.map(async (file) => (await api.cart.uploadPhoto(file)).url),
+          )
+          if (imageUrls.length) customization.imageUrls = imageUrls
+          if (qrCodeImageUrls.length) customization.qrCodeImageUrls = qrCodeImageUrls
+          customImageUrl = imageUrls[0]
+        } else {
+          const imageDataUrls = await Promise.all(images.map(fileToDataUrl))
+          const qrCodeImageDataUrls = await Promise.all(qrCodeImages.map(fileToDataUrl))
+          if (imageDataUrls.length) customization.imageDataUrls = imageDataUrls
+          if (qrCodeImageDataUrls.length) customization.qrCodeImageDataUrls = qrCodeImageDataUrls
+          customImageUrl = imageDataUrls[0]
+        }
       }
 
-      if (config.numberOfNames.enabled) customization.names = names.map((name) => name.trim())
-      if (config.date.enabled) customization.date = date
-      if (config.songName.enabled) customization.songName = songName.trim()
+      const filteredNames = names.map((name) => name?.trim()).filter(Boolean)
+      if (filteredNames.length > 0) customization.names = filteredNames
+      if (date) customization.date = date
+      if (songName?.trim()) customization.songName = songName.trim()
 
       await onAddToCart({
         productId: data.id,
@@ -134,7 +115,7 @@ export default function ProductDetail({
       setCustomizationError('We could not save your customization. Please try again.')
       setCartStatus('idle')
     }
-  }, [onAddToCart, data.id, quantity, cartStatus, config, images, names, date, songName, qrCodeImages, isAuthenticated])
+  }, [onAddToCart, data.id, quantity, cartStatus, images, names, date, songName, qrCodeImages, isAuthenticated])
 
   const handleWishlistToggle = useCallback(() => {
     const next = !isWishlisted

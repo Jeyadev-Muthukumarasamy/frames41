@@ -85,8 +85,19 @@ export function useCheckout() {
           { addressId, couponCode: code ?? undefined },
           orderKeyRef.current ?? undefined,
         ) as any
-        await refreshCart()
-        return order.id as string
+
+        const createdOrderId = order?.id || order?.data?.id
+        if (!createdOrderId) {
+          throw new Error('Order creation failed to return a valid order ID')
+        }
+
+        try {
+          await refreshCart()
+        } catch {
+          // Cart is cleared after order creation; cart refresh errors must not block returning order.id
+        }
+
+        return createdOrderId as string
       } catch (err: unknown) {
         setError(err instanceof Error ? err.message : 'Failed to place order')
         return null

@@ -78,8 +78,20 @@ export default function PaymentPage() {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       .then((order: any) => {
         if (!active) return
-        const item = order.items?.[0]
+        const items = order.items ?? order.data?.items ?? []
+        const item = items[0]
         const snapshot = item?.productSnapshot ?? {}
+        const productName = item?.productName || snapshot.name || 'Order item'
+        const productImage =
+          item?.productImage ||
+          item?.customImageUrl ||
+          item?.customization?.customImageUrl ||
+          (Array.isArray(item?.customization?.imageUrls) ? item.customization.imageUrls[0] : undefined) ||
+          snapshot.image ||
+          snapshot.imageUrl ||
+          snapshot.images?.[0]?.url ||
+          item?.product?.images?.[0]?.url ||
+          ''
         const subtotal = Number(order.subtotal ?? 0)
         const discount = Number(order.discount ?? 0)
         const shipping = Number(order.shippingCharge ?? 0)
@@ -93,18 +105,10 @@ export default function PaymentPage() {
         setSummary({
           product: {
             collection: snapshot.collection ?? snapshot.category?.name ?? 'Frames41',
-            name: snapshot.name ?? 'Order item',
+            name: productName,
             qty: Number(item.quantity ?? 1),
-            imageUrl:
-              item.customImageUrl ||
-              item.customization?.customImageUrl ||
-              (Array.isArray(item.customization?.imageUrls) ? item.customization.imageUrls[0] : undefined) ||
-              snapshot.image ||
-              snapshot.imageUrl ||
-              snapshot.images?.[0]?.url ||
-              item.product?.images?.[0]?.url ||
-              '',
-            imageAlt: snapshot.imageAlt ?? snapshot.images?.[0]?.alt ?? snapshot.name ?? 'Order item',
+            imageUrl: productImage,
+            imageAlt: snapshot.imageAlt ?? snapshot.images?.[0]?.alt ?? productName,
           },
           lineItems: [
             { label: 'Subtotal', value: formatInr(subtotal) },

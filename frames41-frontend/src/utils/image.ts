@@ -20,8 +20,10 @@ export function getOptimizedImageUrl(
 
   const { width = 450, quality = 80, format = 'auto' } = options
 
+  if (url.startsWith('/api/v1/images/proxy')) return url
+
   // Google Drive & proxy URL optimization
-  if (url.includes('drive.google.com') || url.includes('googleusercontent.com') || url.includes('/api/v1/images/proxy')) {
+  if (url.includes('drive.google.com') || url.includes('googleusercontent.com')) {
     const matchId = url.match(/[?&]id=([a-zA-Z0-9_-]+)/) || url.match(/\/d\/([a-zA-Z0-9_-]+)/)
     if (matchId && matchId[1]) {
       const proxyUrl = `/api/v1/images/proxy?id=${matchId[1]}`

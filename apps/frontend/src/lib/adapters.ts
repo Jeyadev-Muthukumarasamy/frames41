@@ -129,12 +129,13 @@ export function adaptRelatedProduct(p: Raw): RelatedProduct {
 
 // ─── Category ─────────────────────────────────────────────────────────────────
 export function adaptCategory(c: Raw, index = 0): Category {
+  const rawImage = c.imageUrl ?? c.image ?? c.products?.[0]?.images?.[0]?.url ?? c.products?.[0]?.imageUrl ?? 'https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?w=800&q=80'
   return {
     id: c.id,
     title: c.name,
     description: c.description ?? undefined,
     cta: 'Shop Now',
-    imageUrl: c.imageUrl ?? c.image ?? c.products?.[0]?.images?.[0]?.url ?? '',
+    imageUrl: getOptimizedImageUrl(rawImage),
     imageAlt: c.name,
     span: index % 3 === 0 ? 'wide' : 'narrow',
   }
