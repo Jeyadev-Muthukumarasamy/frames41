@@ -20,7 +20,7 @@ COPY apps/admin ./apps/admin
 # Install dependencies
 RUN npm ci
 
-# Build frontend first so public/ has the built assets
+# Build frontend first; its Vite config outputs straight into apps/backend/public
 WORKDIR /app/apps/frontend
 RUN npm run build
 
@@ -28,9 +28,6 @@ RUN npm run build
 WORKDIR /app/apps/backend
 RUN npx prisma generate --schema=prisma/schema.prisma
 RUN npm run build:backend
-
-# Copy frontend build to backend public directory
-RUN cp -r /app/apps/frontend/dist/* ./public/
 
 FROM node:20-alpine AS runner
 
