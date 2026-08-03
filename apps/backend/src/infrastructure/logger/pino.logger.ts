@@ -57,35 +57,9 @@ const baseLoggerConfig: pino.LoggerOptions = {
  * Create transport based on environment
  */
 function createTransport(): pino.TransportMultiOptions | undefined {
-  if (env.NODE_ENV === 'development' || env.NODE_ENV === 'test') {
-    return undefined; // Use default stdout with pretty print in dev
-  }
-
-  // Production: structured JSON logs to files with rotation
-  return {
-    targets: [
-      {
-        target: 'pino-roll',
-        level: 'info',
-        options: {
-          file: `${logDir}/app.log`,
-          frequency: 'daily',
-          mkdir: true,
-          limit: { count: Number(env.LOG_RETENTION_DAYS) }, // Keep last N days
-        },
-      },
-      {
-        target: 'pino-roll',
-        level: 'error',
-        options: {
-          file: `${logDir}/error.log`,
-          frequency: 'daily',
-          mkdir: true,
-          limit: { count: Number(env.LOG_RETENTION_DAYS) },
-        },
-      },
-    ],
-  };
+  // Use default stdout (12-factor app)
+  // This allows Railway/Docker to capture the logs.
+  return undefined;
 }
 
 /**
