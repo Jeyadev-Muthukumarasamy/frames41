@@ -62,6 +62,8 @@ async function startServer(): Promise<void> {
     });
   } catch (error) {
     logger.fatal({ error }, 'Failed to start server');
+    // Ensure the error is printed to stdout in case the async logger hasn't flushed yet
+    console.error('Fatal startup error:', error);
     process.exit(1);
   }
 }
