@@ -42,7 +42,7 @@ ENV NODE_ENV=production
 
 # Copy backend files from builder
 COPY --from=builder /app/apps/backend/package*.json ./
-COPY --from=builder /app/apps/backend/node_modules ./node_modules
+COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/apps/backend/dist ./dist
 COPY --from=builder /app/apps/backend/public ./public
 COPY --from=builder /app/apps/backend/prisma ./prisma
