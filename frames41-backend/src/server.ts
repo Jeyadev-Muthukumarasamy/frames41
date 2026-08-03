@@ -54,9 +54,9 @@ async function startServer(): Promise<void> {
 
     // Start server
     const port = env.PORT;
-    server.listen(port, () => {
+    server.listen(port, '0.0.0.0', () => {
       logger.info(
-        { port, env: env.NODE_ENV },
+        { port, host: '0.0.0.0', env: env.NODE_ENV },
         'Server started successfully',
       );
     });

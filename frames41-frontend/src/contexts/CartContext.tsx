@@ -40,6 +40,8 @@ function writeGuestCart(items: GuestCartItem[]) {
 }
 
 
+import { compressImage } from '@/utils/image'
+
 function dataUrlToFile(dataUrl: string, filename: string): File {
   const [header, base64] = dataUrl.split(',')
   const mime = header.match(/data:(.*?);base64/)?.[1] ?? 'image/png'
@@ -58,14 +60,16 @@ async function uploadGuestCustomization(customization?: Record<string, unknown>)
   const qrCodeImageDataUrls = Array.isArray(next.qrCodeImageDataUrls) ? next.qrCodeImageDataUrls as string[] : []
 
   if (imageDataUrls.length) {
-    const files = imageDataUrls.map((dataUrl, index) => dataUrlToFile(dataUrl, `custom-${index}.png`))
+    const rawFiles = imageDataUrls.map((dataUrl, index) => dataUrlToFile(dataUrl, `custom-${index}.png`))
+    const files = await Promise.all(rawFiles.map((f) => compressImage(f)))
     const { urls } = await api.cart.uploadPhotos(files)
     next.imageUrls = urls
     customImageUrl = urls[0]
   }
 
   if (qrCodeImageDataUrls.length) {
-    const files = qrCodeImageDataUrls.map((dataUrl, index) => dataUrlToFile(dataUrl, `qr-${index}.png`))
+    const rawFiles = qrCodeImageDataUrls.map((dataUrl, index) => dataUrlToFile(dataUrl, `qr-${index}.png`))
+    const files = await Promise.all(rawFiles.map((f) => compressImage(f)))
     const { urls } = await api.cart.uploadPhotos(files)
     next.qrCodeImageUrls = urls
   }

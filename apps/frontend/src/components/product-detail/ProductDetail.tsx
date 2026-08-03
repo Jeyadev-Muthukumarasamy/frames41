@@ -80,18 +80,26 @@ export default function ProductDetail({
       if (images.length > 0 || qrCodeImages.length > 0) {
         if (isAuthenticated) {
           const { api } = await import('../../lib/api')
+          const { compressImage } = await import('../../utils/image')
+          const compressedImages = await Promise.all(images.map((f) => compressImage(f)))
+          const compressedQrCodes = await Promise.all(qrCodeImages.map((f) => compressImage(f)))
+          
           const imageUrls = await Promise.all(
-            images.map(async (file) => (await api.cart.uploadPhoto(file)).url),
+            compressedImages.map(async (file) => (await api.cart.uploadPhoto(file)).url),
           )
           const qrCodeImageUrls = await Promise.all(
-            qrCodeImages.map(async (file) => (await api.cart.uploadPhoto(file)).url),
+            compressedQrCodes.map(async (file) => (await api.cart.uploadPhoto(file)).url),
           )
           if (imageUrls.length) customization.imageUrls = imageUrls
           if (qrCodeImageUrls.length) customization.qrCodeImageUrls = qrCodeImageUrls
           customImageUrl = imageUrls[0]
         } else {
-          const imageDataUrls = await Promise.all(images.map(fileToDataUrl))
-          const qrCodeImageDataUrls = await Promise.all(qrCodeImages.map(fileToDataUrl))
+          const { compressImage } = await import('../../utils/image')
+          const compressedImages = await Promise.all(images.map((f) => compressImage(f)))
+          const compressedQrCodes = await Promise.all(qrCodeImages.map((f) => compressImage(f)))
+          
+          const imageDataUrls = await Promise.all(compressedImages.map(fileToDataUrl))
+          const qrCodeImageDataUrls = await Promise.all(compressedQrCodes.map(fileToDataUrl))
           if (imageDataUrls.length) customization.imageDataUrls = imageDataUrls
           if (qrCodeImageDataUrls.length) customization.qrCodeImageDataUrls = qrCodeImageDataUrls
           customImageUrl = imageDataUrls[0]
