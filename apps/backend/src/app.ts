@@ -99,6 +99,12 @@ export function createApp(): express.Application {
   // Audit logging for mutations
   app.use(auditMiddleware);
 
+  // Root: this is an API-only service now (frontend/admin deploy separately).
+  // Kept for platform health/liveness probes that default to "/".
+  app.get('/', (_req, res) => {
+    res.status(200).json({ status: 'ok', service: 'frames41-backend' });
+  });
+
   // Health check endpoints
   app.get('/health', async (_req, res) => {
     res.status(200).json({
