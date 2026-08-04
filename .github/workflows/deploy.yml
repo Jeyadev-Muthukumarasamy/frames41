@@ -24,19 +24,28 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: "npm"
 
-      - run: npm ci --workspaces
+      - name: Install backend dependencies
+        run: npm ci
+        working-directory: apps/backend
 
-      - name: Lint all workspaces
-        run: npm run lint
+      - name: Install frontend dependencies
+        run: npm ci
+        working-directory: apps/frontend
 
-      - name: Generate Prisma client
-        run: npx prisma generate --schema=apps/backend/prisma/schema.prisma
+      - name: Install admin dependencies
+        run: npm ci
+        working-directory: apps/admin
 
-      - name: Build all workspaces
+      - name: Lint frontend and admin
         run: |
-          npm run build -w apps/backend
-          npm run build -w apps/frontend
-          npm run build -w apps/admin
+          npm run lint --prefix apps/frontend
+          npm run lint --prefix apps/admin
+
+      - name: Build all apps
+        run: |
+          npm run build --prefix apps/backend
+          npm run build --prefix apps/frontend
+          npm run build --prefix apps/admin
 
       - name: Verify no high-severity vulnerabilities
         run: npm audit --audit-level=critical || true

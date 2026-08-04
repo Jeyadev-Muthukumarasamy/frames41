@@ -77,7 +77,7 @@ A production-grade e-commerce backend for MDF cutouts, DIY craft kits, and perso
 
 ### Phase 8: DevOps
 
-- ✅ Docker support
+- ✅ Docker for local Postgres/MinIO only (production deploys via Nixpacks, no image build)
 - PM2 cluster configuration
 - Database migrations
 - Health check endpoints

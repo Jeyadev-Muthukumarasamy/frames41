@@ -26,30 +26,46 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: "npm"
+          cache-dependency-path: |
+            package-lock.json
+            apps/backend/package-lock.json
+            apps/frontend/package-lock.json
+            apps/admin/package-lock.json
 
       - name: Install root dependencies
         run: npm ci
 
-      - name: Install workspace dependencies
-        run: npm ci --workspaces
+      - name: Install backend dependencies
+        run: npm ci
+        working-directory: apps/backend
+
+      - name: Install frontend dependencies
+        run: npm ci
+        working-directory: apps/frontend
+
+      - name: Install admin dependencies
+        run: npm ci
+        working-directory: apps/admin
 
       - name: Lint frontend
-        run: npm run lint -w apps/frontend
+        run: npm run lint
+        working-directory: apps/frontend
 
       - name: Lint admin
-        run: npm run lint -w apps/admin
+        run: npm run lint
+        working-directory: apps/admin
 
       - name: Type-check frontend
-        run: npx tsc --noEmit -p apps/frontend/tsconfig.json
+        run: npx tsc --noEmit -p tsconfig.json
+        working-directory: apps/frontend
 
       - name: Type-check admin
-        run: npx tsc --noEmit -p apps/admin/tsconfig.json
-
-      - name: Generate Prisma client
-        run: npx prisma@5.22.0 generate --schema=apps/backend/prisma/schema.prisma
+        run: npx tsc --noEmit -p tsconfig.json
+        working-directory: apps/admin
 
       - name: Type-check backend
-        run: npx tsc --noEmit -p apps/backend/tsconfig.build.json
+        run: npx tsc --noEmit -p tsconfig.build.json
+        working-directory: apps/backend
 
   # ─── 2. Backend Tests ────────────────────────────────────────────────────────
   test-backend:
@@ -89,19 +105,19 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: "npm"
+          cache-dependency-path: apps/backend/package-lock.json
 
       - name: Install dependencies
-        run: npm ci --workspaces
-
-      - name: Generate Prisma client
-        run: npx prisma@5.22.0 generate --schema=apps/backend/prisma/schema.prisma
+        run: npm ci
+        working-directory: apps/backend
 
       - name: Run DB migrations
         run: npx prisma@5.22.0 migrate deploy
         working-directory: apps/backend
 
       - name: Run unit tests
-        run: npm test -w apps/backend
+        run: npm test
+        working-directory: apps/backend
 
       - name: Upload coverage report
         uses: actions/upload-artifact@v4
@@ -125,21 +141,34 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: "npm"
+          cache-dependency-path: |
+            apps/backend/package-lock.json
+            apps/frontend/package-lock.json
+            apps/admin/package-lock.json
 
-      - name: Install dependencies
-        run: npm ci --workspaces
+      - name: Install backend dependencies
+        run: npm ci
+        working-directory: apps/backend
 
-      - name: Generate Prisma client
-        run: npx prisma@5.22.0 generate --schema=apps/backend/prisma/schema.prisma
+      - name: Install frontend dependencies
+        run: npm ci
+        working-directory: apps/frontend
+
+      - name: Install admin dependencies
+        run: npm ci
+        working-directory: apps/admin
 
       - name: Build backend
-        run: npm run build:backend -w apps/backend
+        run: npm run build:backend
+        working-directory: apps/backend
 
       - name: Build frontend
-        run: npm run build -w apps/frontend
+        run: npm run build
+        working-directory: apps/frontend
 
       - name: Build admin
-        run: npm run build -w apps/admin
+        run: npm run build
+        working-directory: apps/admin
 
       - name: Validate frontend bundle size
         run: |

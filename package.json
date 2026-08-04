@@ -1,25 +1,21 @@
 {
-  "name": "frames41-monorepo",
+  "name": "frames41",
   "version": "1.0.0",
   "private": true,
-  "workspaces": [
-    "apps/*"
-  ],
   "scripts": {
-    "postinstall": "npx --no-install prisma generate --schema=apps/backend/prisma/schema.prisma 2>/dev/null || true",
-    "start": "npm run start:prod -w apps/backend",
+    "start": "npm --prefix apps/backend run start:prod",
     "build": "npm run build:all",
-    "build:all": "npm run build -w apps/frontend && npm run build -w apps/backend && npm run build -w apps/admin",
-    "install:all": "npm install",
+    "build:all": "npm run build:frontend && npm run build:backend && npm run build:admin",
+    "install:all": "npm install && npm --prefix apps/backend install && npm --prefix apps/frontend install && npm --prefix apps/admin install",
     "dev": "concurrently -n \"backend,frontend,admin\" -c \"cyan,blue,magenta\" \"npm run dev:backend\" \"npm run dev:frontend\" \"npm run dev:admin\"",
     "dev:full": "concurrently \"npm run dev:frontend\" \"npm run dev:admin\" \"npm run dev:backend\"",
-    "dev:frontend": "npm run dev -w apps/frontend",
-    "dev:admin": "npm run dev -w apps/admin",
-    "dev:backend": "npm run dev -w apps/backend",
-    "build:frontend": "npm run build -w apps/frontend",
-    "build:admin": "npm run build -w apps/admin",
-    "build:backend": "npm run build -w apps/backend",
-    "lint": "npm run lint -w apps/frontend && npm run lint -w apps/admin"
+    "dev:frontend": "npm --prefix apps/frontend run dev",
+    "dev:admin": "npm --prefix apps/admin run dev",
+    "dev:backend": "npm --prefix apps/backend run dev",
+    "build:frontend": "npm --prefix apps/frontend run build",
+    "build:admin": "npm --prefix apps/admin run build",
+    "build:backend": "npm --prefix apps/backend run build:backend",
+    "lint": "npm --prefix apps/frontend run lint && npm --prefix apps/admin run lint"
   },
   "devDependencies": {
     "concurrently": "^10.0.4"
