@@ -1,13 +1,8 @@
-import path from 'path';
-import { fileURLToPath } from 'url';
 import express from 'express';
 import helmet from 'helmet';
 import cors from 'cors';
 import compression from 'compression';
 import { env } from './config/env.js';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 import { httpLogger } from './infrastructure/logger/pino.logger.js';
 import { requestIdMiddleware } from './middleware/requestId.middleware.js';
 import { errorHandler } from './middleware/error.middleware.js';
@@ -78,10 +73,6 @@ export function createApp(): express.Application {
       'Idempotency-Key',
     ],
   }));
-
-  // Serve customer frontend static files
-  const publicPath = path.join(__dirname, '../public');
-  app.use(express.static(publicPath));
 
   // Compression
   app.use(compression());
@@ -212,19 +203,6 @@ export function createApp(): express.Application {
         },
       },
       meta: { timestamp: new Date().toISOString() },
-    });
-  });
-
-  // SPA fallback for non-API routes -> serve customer frontend index.html
-  app.get('*', (req, res, next) => {
-    if (req.path.startsWith('/api') || req.path.startsWith('/webhooks') || req.path.startsWith('/health')) {
-      return next();
-    }
-    const indexPath = path.join(publicPath, 'index.html');
-    res.sendFile(indexPath, (err) => {
-      if (err) {
-        next();
-      }
     });
   });
 

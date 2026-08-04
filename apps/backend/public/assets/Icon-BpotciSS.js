@@ -1,1 +1,0 @@
-import{t as e}from"./jsx-runtime-0FoTPWBw.js";var t=e();function n({name:e,className:n=``,filled:r=!1,"aria-label":i}){return(0,t.jsx)(`span`,{className:`material-symbols-outlined ${n}`,style:r?{fontVariationSettings:`'FILL' 1`}:void 0,"aria-hidden":!i,"aria-label":i,children:e})}export{n as t};
