@@ -12,8 +12,9 @@ import {
   isTokenExpiringSoon,
 } from "./token";
 
-// Use relative base so Vite dev-server proxy & same-origin production ("/api/v1" → backend) works
-const API_BASE = "/api/v1";
+// Dev: Vite proxy handles relative "/api/v1". Prod: frontend and backend are
+// separate origins (Vercel vs Railway), so an absolute URL is required.
+const API_BASE = import.meta.env.VITE_API_URL || "/api/v1";
 
 // ─── Plain instance used only for token refresh (avoids interceptor loops) ───
 const plainAxios = axios.create({ baseURL: API_BASE, timeout: 10_000 });
