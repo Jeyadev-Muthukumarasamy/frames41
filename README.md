@@ -291,32 +291,37 @@ GET    /api/v1/admin/orders
 PATCH  /api/v1/admin/orders/:id/status
 ```
 
-## 🐳 Docker Development
+## 🐳 Local Database (Docker)
+
+Docker is only used for local Postgres/MinIO, not for building deploy images.
 
 ```bash
-# Start all services
-docker-compose up -d
+cd apps/backend
+
+# Start local Postgres + MinIO
+npm run docker:up
 
 # View logs
-docker-compose logs -f app
+npm run docker:logs
 
 # Stop services
-docker-compose down
+npm run docker:down
 ```
 
 Services included:
 
 - PostgreSQL 16
 - MinIO (S3-compatible storage)
-- Application server
 
 ## 🚀 Deployment
 
 ### Railway (Recommended)
 
-1. Connect GitHub repo to Railway
-2. Add PostgreSQL database
-3. Set environment variables
+Each app (`apps/backend`, `apps/frontend`, `apps/admin`) deploys as its own Railway service, built via the `nixpacks.toml` in that app's folder — no Dockerfile/image build involved.
+
+1. Connect GitHub repo to Railway, one service per app with its root directory set to `apps/backend`, `apps/frontend`, or `apps/admin`
+2. Add PostgreSQL database (backend service)
+3. Set environment variables per service
 4. Deploy automatically on push
 
 ### Manual Server
