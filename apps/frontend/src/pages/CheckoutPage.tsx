@@ -63,12 +63,12 @@ function CheckoutOtpGate() {
 
   return (
     <main className="pt-32 pb-section px-6 md:px-12 max-w-container-max mx-auto">
-      <header className="mb-12">
+      <header className="mb-12 text-center">
         <h1 className="font-headline-lg text-headline-lg text-on-background mb-2">Checkout</h1>
         <p className="font-body-md text-body-md text-secondary">Enter your mobile number to continue.</p>
       </header>
 
-      <div className="max-w-md bg-white border border-[#E8E4DA] rounded-lg p-6 shadow-sm">
+      <div className="max-w-md mx-auto bg-white border border-[#E8E4DA] rounded-lg p-6 shadow-sm">
         <div className="mb-6">
           <p className="text-xs uppercase tracking-[0.14em] text-[#800020] font-semibold">Step 1</p>
           <h2 className="text-xl font-semibold text-[#1A1A1A] mt-1">Mobile number</h2>
@@ -85,7 +85,7 @@ function CheckoutOtpGate() {
                 setPhone(e.target.value)
                 setErrors((current) => ({ ...current, phone: undefined, form: undefined }))
               }}
-              placeholder="+918220721216"
+              placeholder="Enter your mobile number"
               className={`w-full border rounded-lg px-3 py-3 text-sm outline-none focus:border-[#800020] ${errors.phone ? 'border-red-500' : 'border-[#E0E0E0]'}`}
               autoFocus
             />

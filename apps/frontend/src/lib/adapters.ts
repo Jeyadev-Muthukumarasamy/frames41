@@ -48,11 +48,11 @@ export function adaptProductDetail(p: Raw): ProductData {
   const rawConfig = p.customizationConfig ?? {}
   const customizationConfig: ProductCustomizationConfig = {
     numberOfImages: {
-      enabled: true,
+      enabled: rawConfig.numberOfImages?.enabled ?? false,
       count: Math.max(1, Number(rawConfig.numberOfImages?.count ?? 1)),
     },
     numberOfNames: {
-      enabled: true,
+      enabled: rawConfig.numberOfNames?.enabled ?? false,
       count: Math.max(1, Number(rawConfig.numberOfNames?.count ?? 1)),
     },
     date: { enabled: rawConfig.date?.enabled ?? false },

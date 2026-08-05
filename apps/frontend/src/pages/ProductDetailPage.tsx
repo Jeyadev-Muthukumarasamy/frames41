@@ -86,6 +86,7 @@ export default function ProductDetailPage() {
           </span>
         </nav>
         <ProductDetail
+          key={product.id}
           data={{ ...product, reviews: { ...product.reviews, breakdown: product.reviews.breakdown.map(b => ({ ...b, percentage: b.percentage ?? 0 })) } }}
           onAddToCart={({ productId, quantity, customization, customImageUrl }) =>
             addItem(productId, quantity, undefined, customization, customImageUrl)
