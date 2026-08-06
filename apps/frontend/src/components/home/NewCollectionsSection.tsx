@@ -59,7 +59,7 @@ export default function NewCollectionsSection({ products }: NewCollectionsSectio
     <section
       id="new-collections"
       aria-labelledby="new-collections-heading"
-      className="py-16 sm:py-xl max-w-container mx-auto px-4 sm:px-6"
+      className="pt-16 sm:pt-xl max-w-container mx-auto px-4 sm:px-6"
     >
       <div className="flex flex-col md:flex-row justify-between items-baseline mb-8 sm:mb-12 gap-4 border-b border-on-background/10 pb-6 sm:pb-8">
         <div>

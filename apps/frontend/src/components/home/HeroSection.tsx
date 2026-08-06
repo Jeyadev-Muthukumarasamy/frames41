@@ -314,28 +314,6 @@ export default function HeroSection({
           ))}
         </div>
       </div>
-
-      {/* Trust Feature Strip */}
-      <div className="mt-8 border-t border-rose-500/30 bg-[#140308]/95 py-4">
-        <div className="max-w-container mx-auto px-4 sm:px-6 grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-          <div className="flex items-center justify-center gap-2 text-xs font-semibold text-amber-200/90">
-            <Icon name="local_shipping" className="text-amber-400 text-lg" />
-            <span>Free Shipping Over ₹999</span>
-          </div>
-          <div className="flex items-center justify-center gap-2 text-xs font-semibold text-amber-200/90">
-            <Icon name="handcraft" className="text-amber-400 text-lg" />
-            <span>100% Handcrafted Premium Wood</span>
-          </div>
-          <div className="flex items-center justify-center gap-2 text-xs font-semibold text-amber-200/90">
-            <Icon name="bolt" className="text-amber-400 text-lg" />
-            <span>Fast Express Dispatch</span>
-          </div>
-          <div className="flex items-center justify-center gap-2 text-xs font-semibold text-amber-200/90">
-            <Icon name="verified_user" className="text-amber-400 text-lg" />
-            <span>Razorpay & COD Available</span>
-          </div>
-        </div>
-      </div>
     </section>
   )
 }

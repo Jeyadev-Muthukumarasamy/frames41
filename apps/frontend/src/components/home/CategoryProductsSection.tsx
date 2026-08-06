@@ -58,7 +58,7 @@ export default function CategoryProductsSection({
     <section
       id="collections"
       aria-labelledby="categories-heading"
-      className="mx-auto max-w-container px-4 py-16 sm:px-6 sm:py-xl"
+      className="mx-auto max-w-container px-4 pt-8 pb-16 sm:px-6 sm:pt-12 sm:pb-xl"
     >
       <div className="mb-10 border-b border-[#800020]/20 pb-6 sm:mb-14 sm:pb-8">
         <span className="mb-1 block text-[10px] font-black uppercase tracking-[0.3em] text-[#800020]">
