@@ -2,11 +2,10 @@ import type { PaymentMethodId, PaymentPayload, PaymentStatus } from '../../types
 import { PAYMENT_METHODS } from '../../constants/payment'
 import PaymentMethodOption from './PaymentMethodOption'
 import RazorpayForm from './RazorpayForm'
-import UpiForm from './UpiForm'
-import CardForm from './CardForm'
-import NetbankingForm from './NetbankingForm'
-import WalletForm from './WalletForm'
-import CashOnDeliveryForm from './CashOnDeliveryForm'
+import PartialCodForm from './PartialCodForm'
+
+const formatInr = (value: number) =>
+  new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(value)
 
 interface PaymentMethodSelectorProps {
   formId: string
@@ -14,6 +13,7 @@ interface PaymentMethodSelectorProps {
   onMethodChange: (id: PaymentMethodId) => void
   onSubmit: (payload: PaymentPayload) => Promise<void>
   status: PaymentStatus
+  totalAmount: number
 }
 
 export default function PaymentMethodSelector({
@@ -22,7 +22,11 @@ export default function PaymentMethodSelector({
   onMethodChange,
   onSubmit,
   status,
+  totalAmount,
 }: PaymentMethodSelectorProps) {
+  const advanceAmount = Math.round(totalAmount * 0.5 * 100) / 100
+  const balanceAmount = Math.round((totalAmount - advanceAmount) * 100) / 100
+
   const activeForm = (() => {
     switch (selectedMethod) {
       case 'razorpay':
@@ -33,44 +37,14 @@ export default function PaymentMethodSelector({
             onSubmit={() => onSubmit({ method: 'razorpay' })}
           />
         )
-      case 'upi':
+      case 'partial_cod':
         return (
-          <UpiForm
+          <PartialCodForm
             formId={formId}
             status={status}
-            onSubmit={(vpaId) => onSubmit({ method: 'upi', vpaId })}
-          />
-        )
-      case 'card':
-        return (
-          <CardForm
-            formId={formId}
-            status={status}
-            onSubmit={(values) => onSubmit({ method: 'card', ...values })}
-          />
-        )
-      case 'netbanking':
-        return (
-          <NetbankingForm
-            formId={formId}
-            status={status}
-            onSubmit={(bankId) => onSubmit({ method: 'netbanking', bankId })}
-          />
-        )
-      case 'wallet':
-        return (
-          <WalletForm
-            formId={formId}
-            status={status}
-            onSubmit={(walletId) => onSubmit({ method: 'wallet', walletId })}
-          />
-        )
-      case 'cod':
-        return (
-          <CashOnDeliveryForm
-            formId={formId}
-            status={status}
-            onSubmit={() => onSubmit({ method: 'cod' })}
+            onSubmit={() => onSubmit({ method: 'partial_cod' })}
+            advanceLabel={formatInr(advanceAmount)}
+            balanceLabel={formatInr(balanceAmount)}
           />
         )
     }

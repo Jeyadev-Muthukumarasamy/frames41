@@ -121,12 +121,13 @@ export default function CustomerCustomizationForm({
 
       {config.songName.enabled && (
         <label className="block text-sm font-bold text-on-background">
-          Name of the song <span className="font-normal text-on-surface-variant text-xs">(Optional)</span>
+          Name of the song <span className="text-error">*</span>
           <input
             value={songName}
             maxLength={200}
+            required
             onChange={(event) => onSongNameChange(event.target.value)}
-            placeholder="Enter the song name (Optional)"
+            placeholder="Enter the song name"
             className="mt-2 block w-full rounded-lg border border-outline-variant bg-background px-3 py-2 text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary"
           />
         </label>

@@ -1,4 +1,4 @@
-export type PaymentMethodId = 'razorpay' | 'upi' | 'card' | 'netbanking' | 'wallet' | 'cod'
+export type PaymentMethodId = 'razorpay' | 'partial_cod'
 
 export interface PaymentMethod {
   readonly id: PaymentMethodId
@@ -9,20 +9,9 @@ export interface PaymentMethod {
 
 export type PaymentStatus = 'idle' | 'verifying' | 'processing' | 'success' | 'error'
 
-export interface CardFormValues {
-  readonly cardNumber: string
-  readonly expiryDate: string
-  readonly cvv: string
-  readonly nameOnCard: string
-}
-
 export type PaymentPayload =
   | { readonly method: 'razorpay' }
-  | { readonly method: 'upi'; readonly vpaId: string }
-  | ({ readonly method: 'card' } & CardFormValues)
-  | { readonly method: 'netbanking'; readonly bankId: string }
-  | { readonly method: 'wallet'; readonly walletId: string }
-  | { readonly method: 'cod' }
+  | { readonly method: 'partial_cod' }
 
 export interface OrderLineItem {
   readonly label: string
@@ -43,6 +32,7 @@ export interface PaymentOrderSummary {
   readonly lineItems: ReadonlyArray<OrderLineItem>
   readonly totalLabel: string
   readonly totalValue: string
+  readonly totalAmount: number
 }
 
 export interface TrustBadge {

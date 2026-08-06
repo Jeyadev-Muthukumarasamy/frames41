@@ -10,33 +10,9 @@ export const PAYMENT_METHODS: ReadonlyArray<PaymentMethod> = [
     icon: 'verified_user',
   },
   {
-    id: 'upi',
-    label: 'UPI / QR',
-    description: 'Google Pay, PhonePe, Paytm & more',
-    icon: 'account_balance_wallet',
-  },
-  {
-    id: 'card',
-    label: 'Cards',
-    description: 'Visa, Mastercard, RuPay, Amex',
-    icon: 'credit_card',
-  },
-  {
-    id: 'netbanking',
-    label: 'Netbanking',
-    description: 'All major Indian banks',
-    icon: 'account_balance',
-  },
-  {
-    id: 'wallet',
-    label: 'Wallets',
-    description: 'Mobikwik, Freecharge & more',
-    icon: 'wallet',
-  },
-  {
-    id: 'cod',
-    label: 'Cash on Delivery',
-    description: 'Pay in cash when your order arrives',
+    id: 'partial_cod',
+    label: 'Partial Payment',
+    description: 'Pay 50% now via Razorpay, 50% cash on delivery',
     icon: 'payments',
   },
 ] as const
@@ -57,6 +33,7 @@ export const ORDER_SUMMARY: PaymentOrderSummary = {
   ],
   totalLabel: 'Total',
   totalValue: '₹50,150',
+  totalAmount: 50150,
 }
 
 export const TRUST_BADGES: ReadonlyArray<TrustBadge> = [

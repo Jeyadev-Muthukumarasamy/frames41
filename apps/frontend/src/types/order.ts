@@ -17,6 +17,7 @@ export interface OrderDetails {
   readonly subtotalInr: number
   readonly shippingCostInr: ShippingCost
   readonly totalInr: number
+  readonly codDueAmountInr: number
   readonly items: ReadonlyArray<OrderItem>
 }
 

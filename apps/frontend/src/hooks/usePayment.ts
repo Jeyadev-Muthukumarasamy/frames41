@@ -11,6 +11,8 @@ interface RazorpayOrderResponse {
   currency: string
   keyId: string
   orderNumber?: string
+  isPartial?: boolean
+  codDueAmount?: number
 }
 
 function loadRazorpayScript(): Promise<boolean> {
@@ -29,7 +31,7 @@ export function usePayment(orderId: string) {
   const [status, setStatus] = useState<PaymentStatus>('idle')
   const [error, setError] = useState<string | null>(null)
 
-  const startPayment = useCallback(async (): Promise<boolean> => {
+  const startPayment = useCallback(async (partial = false): Promise<boolean> => {
     setStatus('loading')
     setError(null)
 
@@ -41,7 +43,7 @@ export function usePayment(orderId: string) {
     }
 
     try {
-      const paymentOrder = await api.payments.create(orderId) as RazorpayOrderResponse
+      const paymentOrder = await api.payments.create(orderId, partial) as RazorpayOrderResponse
       if (!paymentOrder.keyId?.trim()) {
         setStatus('error')
         setError('Payment gateway is not configured. Please contact support.')
@@ -57,7 +59,9 @@ export function usePayment(orderId: string) {
           currency: paymentOrder.currency ?? 'INR',
           order_id: paymentOrder.razorpayOrderId,
           name: 'Frames41',
-          description: paymentOrder.orderNumber ? `Order ${paymentOrder.orderNumber}` : 'Frames41 order',
+          description: paymentOrder.orderNumber
+            ? `${partial ? 'Advance (50%) for order' : 'Order'} ${paymentOrder.orderNumber}`
+            : 'Frames41 order',
           prefill: {
             name: user?.name ?? undefined,
             email: user?.email ?? undefined,

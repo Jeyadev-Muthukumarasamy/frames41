@@ -28,6 +28,7 @@ export default function OrderSummary({ order }: OrderSummaryProps) {
             subtotalInr={order.subtotalInr}
             shippingCostInr={order.shippingCostInr}
             totalInr={order.totalInr}
+            codDueAmountInr={order.codDueAmountInr}
           />
         </div>
       </div>

@@ -7,6 +7,7 @@ export const ORDER_DETAILS: OrderDetails = {
   subtotalInr: 280,
   shippingCostInr: 'complimentary',
   totalInr: 280,
+  codDueAmountInr: 0,
   items: [
     {
       id: 'terracotta-vessel',

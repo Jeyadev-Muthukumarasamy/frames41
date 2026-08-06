@@ -170,6 +170,8 @@ interface PaymentOrderResponse {
   currency: string;
   keyId: string;
   orderNumber: string;
+  isPartial: boolean;
+  codDueAmount: number;
 }
 
 function unwrapPaginated<T>(promise: Promise<AxiosResponse>): Promise<PaginatedResponse<T>> {
@@ -324,13 +326,13 @@ export const api = {
   },
 
   payments: {
-    create: (orderId: string) =>
+    create: (orderId: string, partial = false) =>
       unwrap<PaymentOrderResponse>(
         instance.post(
           "/payments/create",
-          { orderId },
+          { orderId, partial },
           {
-            headers: { "Idempotency-Key": `payment-${orderId}` },
+            headers: { "Idempotency-Key": `payment-${orderId}${partial ? "-partial" : ""}` },
           },
         ),
       ),

@@ -5,12 +5,14 @@ interface OrderTotalsProps {
   subtotalInr: number
   shippingCostInr: ShippingCost
   totalInr: number
+  codDueAmountInr?: number
 }
 
 export default function OrderTotals({
   subtotalInr,
   shippingCostInr,
   totalInr,
+  codDueAmountInr = 0,
 }: OrderTotalsProps) {
   const shippingDisplay =
     shippingCostInr === 'complimentary' ? 'Complimentary' : formatINR(shippingCostInr)
@@ -30,6 +32,18 @@ export default function OrderTotals({
           <dt className="text-body-lg">Total</dt>
           <dd className="text-body-lg text-primary">{formatINR(totalInr)}</dd>
         </div>
+        {codDueAmountInr > 0 && (
+          <div className="flex justify-between text-on-surface-variant border-t border-outline-variant pt-3">
+            <dt className="text-body-md">Paid now</dt>
+            <dd className="text-body-md">{formatINR(totalInr - codDueAmountInr)}</dd>
+          </div>
+        )}
+        {codDueAmountInr > 0 && (
+          <div className="flex justify-between text-on-background font-bold">
+            <dt className="text-body-md">Due on delivery (cash)</dt>
+            <dd className="text-body-md text-primary">{formatINR(codDueAmountInr)}</dd>
+          </div>
+        )}
       </dl>
     </div>
   )

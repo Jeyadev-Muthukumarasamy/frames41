@@ -82,6 +82,7 @@ export default function Payment({ summary, onPaymentSubmit, externalStatus }: Pa
               onMethodChange={handleMethodChange}
               onSubmit={handleSubmit}
               status={status}
+              totalAmount={summary.totalAmount}
             />
           </section>
 

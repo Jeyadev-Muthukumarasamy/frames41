@@ -71,6 +71,10 @@ export default function ProductDetail({
       setCustomizationError(`${oversizedFile.name} must be 200 MB or smaller.`)
       return
     }
+    if (config.songName.enabled && !songName?.trim()) {
+      setCustomizationError('Please enter the name of the song.')
+      return
+    }
     setCartStatus('adding')
     setCustomizationError('')
     try {
@@ -123,7 +127,7 @@ export default function ProductDetail({
       setCustomizationError('We could not save your customization. Please try again.')
       setCartStatus('idle')
     }
-  }, [onAddToCart, data.id, quantity, cartStatus, images, names, date, songName, qrCodeImages, isAuthenticated])
+  }, [onAddToCart, data.id, quantity, cartStatus, images, names, date, songName, qrCodeImages, isAuthenticated, config])
 
   const handleWishlistToggle = useCallback(() => {
     const next = !isWishlisted

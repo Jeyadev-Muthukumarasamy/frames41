@@ -342,6 +342,7 @@ export function adaptOrderDetails(order: Raw): OrderDetails {
     subtotalInr: Number(order.subtotal),
     shippingCostInr: Number(order.shippingCharge) === 0 ? 'complimentary' : Number(order.shippingCharge),
     totalInr: Number(order.total),
+    codDueAmountInr: Number(order.codDueAmount ?? 0),
     items: (order.items ?? []).map(adaptOrderItem),
     // @ts-expect-error steps attached for OrderConfirm page
     steps,

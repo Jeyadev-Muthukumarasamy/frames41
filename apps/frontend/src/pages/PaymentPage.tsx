@@ -66,10 +66,11 @@ function PaymentFailedModal({ reason, onRetry, onClose }: PaymentFailedModalProp
 export default function PaymentPage() {
   const { orderId = '' } = useParams<{ orderId: string }>()
   const navigate = useNavigate()
-  const { status, error, startPayment, placeCashOnDelivery } = usePayment(orderId)
+  const { status, error, startPayment } = usePayment(orderId)
   const [summary, setSummary] = useState<PaymentOrderSummary | null>(null)
   const [loadError, setLoadError] = useState<string | null>(null)
   const [showFailedModal, setShowFailedModal] = useState(false)
+  const [lastMethod, setLastMethod] = useState<PaymentMethodId>('razorpay')
 
   useEffect(() => {
     let active = true
@@ -121,6 +122,7 @@ export default function PaymentPage() {
           ],
           totalLabel: 'Total',
           totalValue: formatInr(total),
+          totalAmount: total,
         })
       })
       .catch((error: unknown) => {
@@ -132,9 +134,8 @@ export default function PaymentPage() {
 
   const handlePaymentSubmit = async (method: PaymentMethodId) => {
     setShowFailedModal(false)
-    const success = method === 'cod'
-      ? await placeCashOnDelivery()
-      : await startPayment()
+    setLastMethod(method)
+    const success = await startPayment(method === 'partial_cod')
 
     if (success) {
       navigate(`/order-confirm/${orderId}`, { replace: true })
@@ -175,7 +176,7 @@ export default function PaymentPage() {
           reason={error ?? 'The payment process was cancelled or could not be completed.'}
           onRetry={() => {
             setShowFailedModal(false)
-            handlePaymentSubmit('razorpay')
+            handlePaymentSubmit(lastMethod)
           }}
           onClose={() => setShowFailedModal(false)}
         />
